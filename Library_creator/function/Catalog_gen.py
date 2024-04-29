@@ -39,4 +39,25 @@ def Forces_vector(F_fun,t_v):
 
     return np.transpose(np.reshape(F_fun(t_v),(1,-1)))
 
+def Make_Solution_vec(exp,Catalog):
+
+    exp_arg = sp.expand(exp).args
+
+    Solution = np.zeros((len(Catalog),1))
+
+    for i in range(len(exp_arg)):
+
+        for v in range(len(Catalog)):
+
+            test = exp_arg[i]/Catalog[v]
+
+            if(len(test.args)==0):
+
+                Solution[v,0] = test
+
+    return Solution
+
+
+
+
 

@@ -27,7 +27,7 @@ def Run_RK45(dynamics, Y0, Time_end,max_step=0.05):  #Run a RK45 integration on 
     # collect data
     t_v = []
     q_v = []
-    for i in range(1000):
+    for i in range(8000):
         # get solution step state
         Model.step()
         t_v.append(Model.t)

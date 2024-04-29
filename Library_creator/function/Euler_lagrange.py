@@ -15,33 +15,51 @@ def Euler_lagranged(expr, Smatrix, t, qi):  #Euler Lagrange en symbolique take a
 
 def Lagrangian_to_Acc_func(L, Symbol_matrix, t, Substitution,fluid_f = 0): # Turn the Lagrangian into the complete Array function
     Qk = Symbol_matrix.shape[1]
-
     Acc = np.zeros((Qk, 1), dtype="object")
+
+    Valid = True
 
     for i in range(Qk):  # Derive the k expression for dynamics
 
-        Dyn = sp.simplify(Euler_lagranged(L, Symbol_matrix, t, i)) + Symbol_matrix[0, i] # Add the Fext term
-        Acc_s = sp.solve(Dyn, Symbol_matrix[3, i])[0]
-        Acc[i, 0] = Acc_s.subs(Substitution) - fluid_f*Symbol_matrix[2, i]
+        Dyn = Euler_lagranged(L, Symbol_matrix, t, i) - Symbol_matrix[0, i] - fluid_f*Symbol_matrix[2, i] # Add the Fext term
+        #print("Dyn",Dyn)
 
-    print(Acc)
+        if( Symbol_matrix[3,i] in Dyn.atoms(sp.Function) ):
+
+            Acc_s = sp.solve(Dyn, Symbol_matrix[3, i])
+            #print("Acc_s",Acc_s)
+            Acc_s = Acc_s[0]
+
+            Acc[i, 0] = Acc_s.subs(Substitution)
+
+        else:
+            Valid = False
+            break
+
+        #Valid = Valid and  ( Symbol_matrix[3,i] in Dyn.atoms(sp.Function) )
+
+    #print(Acc)
 
     Acc_lambda = sp.lambdify([Symbol_matrix], Acc)  # Lambdify under the input of Symbol_matrix
 
-    return Acc_lambda
+    return Acc_lambda,Valid
 
-def Catalog_to_experience_matrix(Nt,Qt,Catalog,Sm,t,q_v):
+def Catalog_to_experience_matrix(Nt,Qt,Catalog,Sm,t,q_v,q_t,subsample=1,noise=0):
 
-    Exp_Mat = np.zeros((Nt * Qt, len(Catalog)))
+    Nt_s = Nt//subsample +1
 
-    q_d_v = np.gradient(q_v)
-    q_dd_v=np.gradient(q_d_v)
+    Exp_Mat = np.zeros(((Nt_s) * Qt, len(Catalog)))
 
-    q_matrix = np.zeros((Sm.shape[0],Sm.shape[1],Nt))
+    q_d_v = np.gradient(q_v,q_t)
+    q_dd_v= np.gradient(q_d_v,q_t)
 
-    q_matrix[1,:,:] = q_v
-    q_matrix[2, :,:] = q_d_v
-    q_matrix[3, :,:] = q_dd_v
+    q_matrix = np.zeros((Sm.shape[0],Sm.shape[1],Nt_s))
+
+    q_matrix[1, :, :] = q_v[::subsample]
+    q_matrix[2, :, :] = q_d_v[::subsample]
+    q_matrix[3, :, :] = q_dd_v[::subsample]
+
+    q_matrix = q_matrix + np.random.normal(0,noise,q_matrix.shape)
 
     for i in range(Qt):
 
@@ -58,6 +76,8 @@ def Catalog_to_experience_matrix(Nt,Qt,Catalog,Sm,t,q_v):
         for j in range(len(Catalog_lambded)):
             # print(str(signature(Catalog_lambded[j])))
             Func_pick = Catalog_lambded[j]
-            Exp_Mat[i * Nt:(i + 1) * (Nt), j] = Func_pick(q_matrix)
+            Exp_Mat[i * Nt_s:(i + 1) * (Nt_s), j] = Func_pick(q_matrix)
+
+
 
     return Exp_Mat
