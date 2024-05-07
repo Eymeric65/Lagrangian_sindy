@@ -44,11 +44,11 @@ def Lagrangian_to_Acc_func(L, Symbol_matrix, t, Substitution,fluid_f = 0): # Tur
 
     return Acc_lambda,Valid
 
-def Catalog_to_experience_matrix(Nt,Qt,Catalog,Sm,t,q_v,q_t,subsample=1,noise=0):
+def Catalog_to_experience_matrix(Nt,Qt,Catalog,Sm,t,q_v,q_t,subsample=1,noise=0,Frottement=False):
 
-    Nt_s = Nt//subsample +1
+    Nt_s = Nt//subsample + int(subsample!=1)
 
-    Exp_Mat = np.zeros(((Nt_s) * Qt, len(Catalog)))
+    Exp_Mat = np.zeros(((Nt_s) * Qt, len(Catalog)+int(Frottement)))
 
     q_d_v = np.gradient(q_v,q_t)
     q_dd_v= np.gradient(q_d_v,q_t)
@@ -77,6 +77,9 @@ def Catalog_to_experience_matrix(Nt,Qt,Catalog,Sm,t,q_v,q_t,subsample=1,noise=0)
             # print(str(signature(Catalog_lambded[j])))
             Func_pick = Catalog_lambded[j]
             Exp_Mat[i * Nt_s:(i + 1) * (Nt_s), j] = Func_pick(q_matrix)
+
+        if(Frottement):
+            Exp_Mat[i * Nt_s:(i + 1) * (Nt_s), -1] = q_d_v[::subsample]
 
 
 

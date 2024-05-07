@@ -39,11 +39,11 @@ def Forces_vector(F_fun,t_v):
 
     return np.transpose(np.reshape(F_fun(t_v),(1,-1)))
 
-def Make_Solution_vec(exp,Catalog):
+def Make_Solution_vec(exp,Catalog,Frottement=0):
 
     exp_arg = sp.expand(exp).args
 
-    Solution = np.zeros((len(Catalog),1))
+    Solution = np.zeros((len(Catalog)+int(Frottement!=0),1))
 
     for i in range(len(exp_arg)):
 
@@ -55,7 +55,20 @@ def Make_Solution_vec(exp,Catalog):
 
                 Solution[v,0] = test
 
+    if Frottement != 0:
+        Solution[-1,0] = Frottement
+
     return Solution
+
+def Make_Solution_exp(Solution,Catalog):
+
+    Modele = 0
+
+    for i in range(len(Solution)):
+
+        Modele += Solution[i]*Catalog[i]
+
+    return Modele
 
 
 
