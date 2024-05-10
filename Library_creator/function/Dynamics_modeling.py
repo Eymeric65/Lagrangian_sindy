@@ -27,15 +27,28 @@ def Run_RK45(dynamics, Y0, Time_end,max_step=0.05):  #Run a RK45 integration on 
     # collect data
     t_v = []
     q_v = []
-    for i in range(8000):
-        # get solution step state
-        Model.step()
-        t_v.append(Model.t)
-        q_v.append(Model.y)
-        # break loop after modeling is finished
-        if Model.status == 'finished':
-            print("End step : ", i)
-            break
+
+    try:
+
+        # for i in range(40000):
+        #     # get solution step state
+        #     Model.step()
+        #     t_v.append(Model.t)
+        #     q_v.append(Model.y)
+        #     # break loop after modeling is finished
+        #     if Model.status == 'finished':
+        #
+        #         #print("End step : ", i)
+        #
+        #         break
+        while Model.status != "finished":
+            Model.step()
+            t_v.append(Model.t)
+            q_v.append(Model.y)
+
+    except RuntimeError:
+
+        print("RuntimeError")
 
     q_v = np.array(q_v)  # Output as (k,len(t_values)) with line like this : q0,q0_d,...,qk,qk_d
     t_v = np.array(t_v)

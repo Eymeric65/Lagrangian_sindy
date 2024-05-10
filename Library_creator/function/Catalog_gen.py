@@ -1,7 +1,7 @@
 import sympy as sp
 import numpy as np
 
-def Catalog_gen_p(f_cat,qk,prof,im,jm): # MDR la multiplication c'est transitif, solved
+def Catalog_gen_p(f_cat,qk,prof,im,jm,puissance,puissance_init): # Not everything lol
 
     if prof==0 :
         return [1] #,f_cat[f].format(v_cat[v])
@@ -9,22 +9,86 @@ def Catalog_gen_p(f_cat,qk,prof,im,jm): # MDR la multiplication c'est transitif,
         ret = []
         for i in range(im,len(f_cat)):
             for j in range(jm,qk):
-                res = Catalog_gen_p(f_cat,qk,prof-1,i,j)
-                fun_p = f_cat[i]
-                res_add = [res[l]*fun_p(j) for l in range(len(res))]
+
+                if i == im and j == jm:
+                    if puissance > 0:
+                        res = Catalog_gen_p(f_cat,qk,prof-1,i,j,puissance-1,puissance_init)
+                    else:
+                        res = []
+
+                    fun_p = f_cat[i]
+                    res_add = [res[l]*fun_p(j) for l in range(len(res))]
+
+                else:
+
+                    res = Catalog_gen_p(f_cat,qk,prof-1,i,j,puissance_init-1,puissance_init)
+
+                    fun_p = f_cat[i]
+                    res_add = [res[l]*fun_p(j) for l in range(len(res))]
 
                 ret += res_add
 
+
         return ret
 
-def Catalog_gen(f_cat,qk,degre):
+def Concat_Func_var(f_cat,qk):
 
+    ret = []
+
+    for i in range(len(f_cat)):
+
+        for j in range(qk):
+
+            fun_p = f_cat[i]
+            ret += [fun_p(j)]
+
+    return ret
+
+def Catalog_gen_c(cat,prof,im,puissance,puissance_init):
+
+    if prof==0 :
+        return [1] #,f_cat[f].format(v_cat[v])
+    else:
+        ret = []
+        for i in range(im+1, len(cat)):
+
+            res = Catalog_gen_c(cat,prof - 1, i, puissance_init - 1, puissance_init)
+
+            ret += [res[l] * cat[i] for l in range(len(res))]
+
+        if puissance > 0:
+
+            res = Catalog_gen_c(cat, prof - 1, im, puissance - 1, puissance_init)
+            ret += [res[l] * cat[im] for l in range(len(res))]
+
+        return ret
+
+def Catalog_gen(f_cat,qk,degre,puissance=None):
     Catalog = []
 
+    if puissance==None:
+
+        puissance = degre
+
+    sub_cat = Concat_Func_var(f_cat,qk)
+
     for i in range(degre):
-        Catalog += Catalog_gen_p(f_cat, qk, i + 1, 0, 0)
+        Catalog += Catalog_gen_c(sub_cat, i + 1, 0,puissance,puissance)
 
     return Catalog
+
+# def Catalog_gen(f_cat,qk,degre,puissance=None):
+#
+#     Catalog = []
+#
+#     if puissance==None:
+#
+#         puissance = degre
+#
+#     for i in range(degre):
+#         Catalog += Catalog_gen_p(f_cat, qk, i + 1, 0, 0,puissance,puissance)
+#
+#     return Catalog
 
 def Symbol_Matrix_g(Coord_number,t):
 
@@ -39,11 +103,12 @@ def Forces_vector(F_fun,t_v):
 
     return np.transpose(np.reshape(F_fun(t_v),(1,-1)))
 
-def Make_Solution_vec(exp,Catalog,Frottement=0):
+def Make_Solution_vec(exp,Catalog,Frottement=[]):
 
-    exp_arg = sp.expand(exp).args
-
-    Solution = np.zeros((len(Catalog)+int(Frottement!=0),1))
+    exp_arg = sp.expand(sp.expand_trig(exp)).args
+    print("Expression ",exp_arg)
+    print("Reduction ",sp.expand(sp.expand_trig(exp)))
+    Solution = np.zeros((len(Catalog)+len(Frottement),1))
 
     for i in range(len(exp_arg)):
 
@@ -55,8 +120,8 @@ def Make_Solution_vec(exp,Catalog,Frottement=0):
 
                 Solution[v,0] = test
 
-    if Frottement != 0:
-        Solution[-1,0] = Frottement
+    for i in range(len(Frottement)):
+        Solution[len(Catalog)+i] = Frottement[i]
 
     return Solution
 

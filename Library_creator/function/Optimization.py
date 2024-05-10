@@ -67,14 +67,14 @@ def Lasso_reg(F_vec,Exp_norm):
 
     Y = F_vec[:, 0]
 
-    model = LassoCV(cv=5, random_state=0, max_iter=10000)
+    model = LassoCV(cv=5, random_state=0, max_iter=10**6)
 
     # Fit model
     model.fit(Exp_norm, Y)
 
     alpha = model.alpha_
 
-    print("Lasso alpha : ", alpha)
+    #print("Lasso alpha : ", alpha)
 
     # Set best alpha
     lasso_best = Lasso(alpha=model.alpha_)
@@ -84,12 +84,14 @@ def Lasso_reg(F_vec,Exp_norm):
 
     return coeff
 
-def Normalize_exp(Exp_matrix):
+def Normalize_exp(Exp_matrix,null_effect=False):
 
-    Variance = np.var(Exp_matrix, axis=0)
-    Mean = np.mean(Exp_matrix, axis=0)
+    Variance = np.var(Exp_matrix, axis=0) * int(not null_effect) + int(null_effect)
+    Mean = np.mean(Exp_matrix, axis=0) * int(not null_effect)
 
     reduction = np.argwhere(Variance != 0)
+
+    print("Reduction shape : ",Variance.shape,reduction.shape)
 
     Exp_matrix_r = Exp_matrix[:, reduction[:, 0]]
     Exp_norm = (Exp_matrix_r - Mean[reduction[:, 0]]) / Variance[reduction[:, 0]]
