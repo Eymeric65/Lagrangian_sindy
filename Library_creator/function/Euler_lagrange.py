@@ -62,9 +62,9 @@ def Lagrangian_to_Acc_func(L, Symbol_matrix, t, Substitution,fluid_f = 0): # Tur
     return Acc_lambda,Valid
 
 def Catalog_to_experience_matrix(Nt,Qt,Catalog,Sm,t,q_v,q_t,subsample=1,noise=0,Frottement=False):
-    print(Nt)
-    print(Nt//subsample)
-    print(Nt/2 != Nt//2)
+    #print(Nt)
+    #print(Nt//subsample)
+    #print(Nt/2 != Nt//2)
 
     Nt_s = len(q_v[::subsample])
 
@@ -83,12 +83,12 @@ def Catalog_to_experience_matrix(Nt,Qt,Catalog,Sm,t,q_v,q_t,subsample=1,noise=0,
 
     for i in range(Qt):
 
-        print("Valeur Qt : ",i)
+        #print("Valeur Qt : ",i)
         Catalog_lagranged = list(map(lambda x: Euler_lagranged(x, Sm,t,i), Catalog))
 
-        print(Catalog_lagranged)
+        #print(Catalog_lagranged)
 
-        print("--------------")
+        #print("--------------")
 
         Catalog_lambded = list(map(lambda x: sp.lambdify([Sm], x, modules="numpy"), Catalog_lagranged))
 

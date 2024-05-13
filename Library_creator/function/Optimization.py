@@ -25,7 +25,7 @@ def Hard_treshold_sparse_regression(Exp_matrix,Forces_vec_s,Catalog,cond=Conditi
 
     step = []
 
-    print("Recup treshold",Recup_Threshold)
+    #print("Recup treshold",Recup_Threshold)
 
     while Nbind < Nbind_prec:
         Nbind_prec = Nbind
@@ -46,8 +46,8 @@ def Hard_treshold_sparse_regression(Exp_matrix,Forces_vec_s,Catalog,cond=Conditi
 
         Solution, residual, rank, _ = np.linalg.lstsq(Exp_matrix, Forces_vec_s, rcond=None)
 
-        print("sol_len",Condition_value/np.max(Condition_value))
-        print("indices",indices)
+        #print("sol_len",Condition_value/np.max(Condition_value))
+        #print("indices",indices)
 
         Nbind = len(Sol_ind)
 
@@ -91,7 +91,7 @@ def Normalize_exp(Exp_matrix,null_effect=False):
 
     reduction = np.argwhere(Variance != 0)
 
-    print("Reduction shape : ",Variance.shape,reduction.shape)
+    #print("Reduction shape : ",Variance.shape,reduction.shape)
 
     Exp_matrix_r = Exp_matrix[:, reduction[:, 0]]
     Exp_norm = (Exp_matrix_r - Mean[reduction[:, 0]]) / Variance[reduction[:, 0]]

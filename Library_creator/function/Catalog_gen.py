@@ -106,8 +106,8 @@ def Forces_vector(F_fun,t_v):
 def Make_Solution_vec(exp,Catalog,Frottement=[]):
 
     exp_arg = sp.expand(sp.expand_trig(exp)).args
-    print("Expression ",exp_arg)
-    print("Reduction ",sp.expand(sp.expand_trig(exp)))
+    #print("Expression ",exp_arg)
+    #print("Reduction ",sp.expand(sp.expand_trig(exp)))
     Solution = np.zeros((len(Catalog)+len(Frottement),1))
 
     for i in range(len(exp_arg)):

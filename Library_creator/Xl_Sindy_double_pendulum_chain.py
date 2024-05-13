@@ -12,12 +12,13 @@ import seaborn as sn
 
 #np.random.seed(1230)
 
+# Setup probleme
+
 t = sp.symbols("t")
 
 
 Coord_number = 2
 Symb = Symbol_Matrix_g(Coord_number,t)
-
 
 theta1 = Symb[1,0]
 theta1_d = Symb[2,0]
@@ -37,6 +38,12 @@ Substitution = {"g": 9.81, "l1": L1t, "m1": 0.1, "l2": L2t, "m2": 0.1}
 L = (1 / 2 * (m1 + m2) * l1 ** 2 * theta1_d ** 2 + 1 / 2 * m2 * l2 ** 2 * theta2_d ** 2 + m2 * l1 * l2 * theta1_d
      * theta2_d * sp.cos(theta1 - theta2) + (m1 + m2) * g * l1 * sp.cos(theta1) + m2 * g * l2 * sp.cos(
     theta2))
+
+Y0 = np.array([[0, 0], [0, 0]])  # De la forme (k,2)
+
+Frotement = [-0.0,-0.0]
+
+# -------------------------------
 
 # Creation catalogue
 
@@ -58,7 +65,7 @@ Solution_ideal = Make_Solution_vec(sp.expand_trig(L.subs(Substitution)),Catalog)
 S_index = (Solution_ideal != 0).nonzero()[0]
 
 #add_new_comp = 15
-add_new_comp = 9 # 9 marchait bien
+add_new_comp = 0 # 9 marchait bien
 
 count = np.array(range(len(Catalog)))
 
@@ -70,188 +77,131 @@ res = np.concatenate((count[indices],S_index))
 
 Solution_ideal = Solution_ideal[res,:]
 
-
 Catalog = Catalog[res]
 
 Cat_len = len(Catalog)
 
+#--------------------------
 
+# Creation des forces
+
+# Parametre
 Surfacteur=Cat_len*3 # La base
-
-
-
 
 periode = 0.7 #
 
 #Time_end = periode*10
 
-Time_end = periode * 2 * Cat_len /4
+N_periode = 4#Number of sample in one period
+
+Time_end = periode * 2 * Cat_len /N_periode
+
+NbTry = 50
+
+Try_list = np.ones((NbTry,))
+
+T_cut = Time_end * 0.5
+
+M_span = 0.1  # Max span
+
+periode_shift = 0.2
+
+#------------------
+
+for jhk in range(len(Try_list)):
 
 #----------------External Forces--------------------
 
-# F_ext_time = np.array([0, 2, 4, 6, 8, Time_end])
-# F_ext_Value = np.array([[0, 1, -1, 0, 0, 0],[0, 1, -1, 0, 0, 0]]) * 0.1  # De la forme (k,...)
-#
-# F_ext_func = interpolate.CubicSpline(F_ext_time, F_ext_Value, axis=1)
 
-T_cut= Time_end*0.5
+    F_ext_time = np.arange(0,Time_end,periode)
 
-def F_ext(t):
-    return np.array([np.cos(t*np.cos(t*2*np.pi/T_cut)*2*np.pi/10)*0.1,np.sin(t*np.cos(t*2*np.pi/T_cut)*2*np.pi/10)*0.1])
+    f_nbt = len(F_ext_time)
 
-def F_ext2(t):
-    return np.array([np.cos(t*np.cos(t*np.pi/T_cut)*2*np.pi/5)*0.06,np.sin(t*np.sin(t*np.pi/T_cut)*2*np.pi/6)*0.06])
+    F_ext_time = F_ext_time + (np.random.random((f_nbt,))-0.5)*2*periode_shift
 
-def F_ext3(t):
-    return np.array([np.cos(t*3*2*np.pi/10)*0.11,np.sin(t*3*2*np.pi/10)*0.08])
+    F_ext_Value = (np.random.random((Coord_number,f_nbt))-0.5)*2*M_span
 
+    F_ext_func = interpolate.CubicSpline(F_ext_time, F_ext_Value, axis=1)
 
-def F_ext4(t):
-    return np.array([np.cos(t*np.cos(t*2*np.pi/T_cut)*2*np.pi/10)*0.1,0.0*t])
+    # ---------------------------
 
-# Create good forces excitation
+    # Creation des schema de simulation
 
-M_span = 0.1 # Max span
+    Acc_func,_ = Lagrangian_to_Acc_func(L, Symb, t, Substitution,fluid_f=Frotement)
 
-periode = 1 #
+    Dynamics_system = Dynamics_f(Acc_func,F_ext_func)
 
-periode_shift =0.2
+    t_values_w, thetas_values_w = Run_RK45(Dynamics_system, Y0, Time_end,max_step=0.0005)
 
-F_ext_time = np.arange(0,Time_end,periode)
+    q_d_v = np.gradient(thetas_values_w[:,::2], t_values_w,axis=0)
 
-f_nbt = len(F_ext_time)
+    test = thetas_values_w[:,1::2]
 
-F_ext_time = F_ext_time + np.random.normal(0,periode_shift,(f_nbt,))
+    thetas_values_w = thetas_values_w[:,::2]
 
-F_ext_Value = (np.random.random((Coord_number,f_nbt))-0.5)*M_span
 
-F_ext_func = interpolate.CubicSpline(F_ext_time, F_ext_Value, axis=1)
+    #print("Deviation gradient q0",np.linalg.norm(q_d_v - test)) #tres important
 
-#print("number of timecode ",f_nbt)
-#print(F_ext_time)
-#print(F_ext_Value)
 
-#F_ext_func = F_ext2
-# ---------------------------
 
-Y0 = np.array([[0, 0], [0, 0]])  # De la forme (k,2)
 
+    # Restriction de la data
 
 
-Frotement = [-0.0,-0.0]
 
-Acc_func,_ = Lagrangian_to_Acc_func(L, Symb, t, Substitution,fluid_f=Frotement)
+    t_values = t_values_w[t_values_w<T_cut]
+    thetas_values = thetas_values_w[t_values_w<T_cut,:]
 
-Dynamics_system = Dynamics_f(Acc_func,F_ext_func)
 
-t_values_w, thetas_values_w = Run_RK45(Dynamics_system, Y0, Time_end,max_step=0.0005)
 
-q_d_v = np.gradient(thetas_values_w[:,::2], t_values_w,axis=0)
+    #Ajout du bruit
 
-test = thetas_values_w[:,1::2]
+    Noise_sigma=  3*10**-2 * 0
+    thetas_values_n = thetas_values
 
-thetas_values_w = thetas_values_w[:,::2]
+    Nb_t = len(t_values)
 
+    Is_Frottement = Frotement!=0
 
-#print("Deviation gradient q0",np.linalg.norm(q_d_v - test)) #tres important
+    Subsample = Nb_t//Surfacteur
 
+    t_values_s = t_values[::Subsample]
 
+    Forces_vec = Forces_vector(F_ext_func,t_values_s)
 
+    Exp_matrix = Catalog_to_experience_matrix(Nb_t,Coord_number,Catalog,Symb,t,thetas_values_n,t_values,subsample=Subsample)
 
-# Restriction de la data
+    Exp_norm,reduction,Variance = Normalize_exp(Exp_matrix,null_effect=True)
 
+    coeff = Lasso_reg(Forces_vec,Exp_norm)
 
+    Solution = Un_normalize_exp(coeff,Variance,reduction,Exp_matrix)
 
-t_values = t_values_w[t_values_w<T_cut]
-thetas_values = thetas_values_w[t_values_w<T_cut,:]
+    #Hardtreshold
+    tr =  10**-3
 
+    Solution[np.abs(Solution)< np.max(np.abs(Solution))*tr] = 0
 
+    Erreur = np.linalg.norm( Solution-Solution_ideal)/np.linalg.norm(Solution_ideal)
 
-#Ajout du bruit
+    print("Erreur de resolution coeff :",Erreur)
 
-Noise_sigma=  3*10**-2 * 0
-thetas_values_n = thetas_values
+    Try_list[jhk] = Erreur
 
-
-
-
-#Solution_ideal[5,0] = 0
-
-
-
-#print("Sol ideal",Solution_ideal.shape)
-#print("Sol ideal fact",len((Solution_ideal != 0).nonzero()[0]))
-
-
-
-Nb_t = len(t_values)
-
-#print("Nombre de temps",Nb_t)
-
-
-
-
-
-Is_Frottement = Frotement!=0
-
-
-
-Subsample = Nb_t//Surfacteur
-
-#print(Subsample)
-
-#Subsample = 50
-
-t_values_s = t_values[::Subsample]
-
-
-
-Forces_vec = Forces_vector(F_ext_func,t_values_s)
-
-#print("forces_vec_shape",Forces_vec.shape)
-
-Exp_matrix = Catalog_to_experience_matrix(Nb_t,Coord_number,Catalog,Symb,t,thetas_values_n,t_values,subsample=Subsample)
-
-#print(Exp_matrix.shape)
-
-Exp_norm,reduction,Variance = Normalize_exp(Exp_matrix,null_effect=True)
-
-coeff = Lasso_reg(Forces_vec,Exp_norm)
-
-Solution = Un_normalize_exp(coeff,Variance,reduction,Exp_matrix)
-
-#Hardtreshold
-tr =  10**-3
-
-Solution[np.abs(Solution)< np.max(np.abs(Solution))*tr] = 0
-
-#print("Erreur de resolution coeff :",np.linalg.norm( Solution-Solution_ideal)/np.linalg.norm(Solution_ideal))
-
-#print(Solution,Solution_ideal)
+print("experience finale : ",Try_list)
+print("experience finale MEAN : ",np.mean(Try_list))
 
 
 Modele_fit = Make_Solution_exp(Solution[:,0],Catalog)
-
-#print("Lagrangien de base : ",sp.simplify( L.subs(Substitution)))
-
-#print("Lagrangien expanded : ",sp.expand_trig(L.subs(Substitution)))
-
-#print("Equation mouvement : ",Euler_lagranged(L,Symb,t,0)) #Juste
-#print("Equation mouvement : ",Euler_lagranged(L,Symb,t,1)) #Juste
-
-
-#print("Modele fit",Modele_fit)
-
-#print("Shape matrice experience",Exp_matrix.shape)
 
 fig, axs = plt.subplots(3, 3)
 
 fig.suptitle("Resultat Experience Double pendule"+str(Noise_sigma))
 
 
-#print("Sol ",Solution.shape)
-
 Acc_func2 , Model_Valid =  Lagrangian_to_Acc_func(Modele_fit, Symb, t, Substitution,fluid_f=Frotement)
+
+
 
 #Simulation temporelle
 
@@ -292,8 +242,6 @@ axs[1,0].legend()
 axs[1,2].legend()
 
 axs[0,1].set_title("Erreur de regression")
-
-#print("Woaw",np.repeat(t_values,Coord_number).shape )
 
 axs[2,1].plot(t_values_w,F_ext_func(t_values_w).T)
 
