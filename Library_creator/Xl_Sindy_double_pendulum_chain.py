@@ -41,7 +41,7 @@ L = (1 / 2 * (m1 + m2) * l1 ** 2 * theta1_d ** 2 + 1 / 2 * m2 * l2 ** 2 * theta2
 
 Y0 = np.array([[0, 0], [0, 0]])  # De la forme (k,2)
 
-Frotement = [-0.0,-0.0]
+Frotement = [-0.12,-0.12]
 
 # -------------------------------
 
@@ -51,33 +51,60 @@ Degree_function = 4
 
 Puissance_model= 2
 
-function_catalog = [
-    lambda x : Symb[1,x],
-    lambda x : Symb[2,x],
-    lambda x : sp.sin(Symb[1,x]),
-    lambda x : sp.cos(Symb[1,x])
+#Suited catalog creation
+
+function_catalog_1 = [
+    lambda x: Symb[2,x]
 ]
 
-Catalog = np.array(Catalog_gen(function_catalog,Coord_number,Degree_function,puissance=Puissance_model))
+function_catalog_2 = [
+     lambda x : sp.sin(Symb[1,x]),
+     lambda x : sp.cos(Symb[1,x])
+]
 
-Solution_ideal = Make_Solution_vec(sp.expand_trig(L.subs(Substitution)),Catalog)#,Frottement=Frotement)
+Catalog_sub_1 = np.array(Catalog_gen(function_catalog_1,Coord_number,2))
 
-S_index = (Solution_ideal != 0).nonzero()[0]
+Catalog_sub_2 = np.array(Catalog_gen(function_catalog_2,Coord_number,2))
 
-#add_new_comp = 15
-add_new_comp = 0 # 9 marchait bien
+Catalog_crossed = np.outer(Catalog_sub_2,Catalog_sub_1)
 
-count = np.array(range(len(Catalog)))
+print(Catalog_sub_1.shape,Catalog_sub_2.shape,Catalog_crossed.shape)
 
-count = np.delete(count,S_index)
 
-indices = np.random.randint(0,len(count)-1,add_new_comp)
+Catalog = np.concatenate((Catalog_crossed.flatten(),Catalog_sub_1,Catalog_sub_2))
 
-res = np.concatenate((count[indices],S_index))
+Solution_ideal = Make_Solution_vec(sp.expand_trig(L.subs(Substitution)),Catalog,Frottement=Frotement)#,Frottement=Frotement)
 
-Solution_ideal = Solution_ideal[res,:]
+# function_catalog = [
+#     lambda x : Symb[1,x],
+#     lambda x : Symb[2,x],
+#     lambda x : sp.sin(Symb[1,x]),
+#     lambda x : sp.cos(Symb[1,x])
+# ]
+#
+# Catalog = np.array(Catalog_gen(function_catalog,Coord_number,Degree_function,puissance=Puissance_model))
+#
 
-Catalog = Catalog[res]
+#
+# S_index = (Solution_ideal[:-len(Frotement)] != 0).nonzero()[0]
+#
+# #add_new_comp = 15
+# add_new_comp = 100 # 9 marchait bien
+#
+# count = np.array(range(len(Catalog)))
+#
+# count = np.delete(count,S_index)
+#
+# indices = np.random.randint(0,len(count)-1,add_new_comp)
+#
+# #res = np.concatenate((count[indices],S_index,np.arange(len(Frotement))+len(Catalog)))
+# res = np.concatenate((count,S_index,np.arange(len(Frotement))+len(Catalog)))
+#
+# Solution_ideal = Solution_ideal[res,:]
+#
+#
+#
+# Catalog = Catalog[res[:-len(Frotement)]]
 
 Cat_len = len(Catalog)
 
@@ -86,32 +113,36 @@ Cat_len = len(Catalog)
 # Creation des forces
 
 # Parametre
-Surfacteur=Cat_len*3 # La base
+Surfacteur=Cat_len*20 # La base
 
-periode = 0.7 #
+periode = 0.8 #
 
 #Time_end = periode*10
 
-N_periode = 4#Number of sample in one period
+N_periode = 1# In one periode they will be Surfacteur*N_Periode/Cat_len time tick
 
-Time_end = periode * 2 * Cat_len /N_periode
+#Time_end = periode * 100
+Time_end = periode * Cat_len/N_periode
+#Time_end = periode * 120
 
-NbTry = 50
+print("Temps de l'experience {} et longueur du Catalogue {} ".format(Time_end,Cat_len))
+
+NbTry = 1
 
 Try_list = np.ones((NbTry,))
 
-T_cut = Time_end * 0.5
+T_cut = Time_end * 0.7
 
-M_span = 0.1  # Max span
+#M_span=1.2
+M_span = 4 # Max span
 
-periode_shift = 0.2
+periode_shift = 0.1
 
 #------------------
 
-for jhk in range(len(Try_list)):
+np.random.seed()
 
-#----------------External Forces--------------------
-
+def F_gen(M_span,periode_shift,Time_end,periode):
 
     F_ext_time = np.arange(0,Time_end,periode)
 
@@ -121,7 +152,37 @@ for jhk in range(len(Try_list)):
 
     F_ext_Value = (np.random.random((Coord_number,f_nbt))-0.5)*2*M_span
 
-    F_ext_func = interpolate.CubicSpline(F_ext_time, F_ext_Value, axis=1)
+    return interpolate.CubicSpline(F_ext_time, F_ext_Value, axis=1)
+
+def concat_f(arr):
+
+    def ret(t):
+
+        out = arr[0](t)
+
+        for f in arr[1:]:
+
+            out += f(t)
+
+        return out
+
+    return ret
+
+for jhk in range(len(Try_list)):
+
+#----------------External Forces--------------------
+
+    f_arr = []
+
+    aug = 50
+
+    for i in range(1,aug):
+
+        f_arr += [F_gen(M_span/(1+np.log(aug))/(i),periode_shift/i,Time_end,periode/i)]
+
+
+
+    F_ext_func = concat_f(f_arr)
 
     # ---------------------------
 
@@ -131,7 +192,7 @@ for jhk in range(len(Try_list)):
 
     Dynamics_system = Dynamics_f(Acc_func,F_ext_func)
 
-    t_values_w, thetas_values_w = Run_RK45(Dynamics_system, Y0, Time_end,max_step=0.0005)
+    t_values_w, thetas_values_w = Run_RK45(Dynamics_system, Y0, Time_end,max_step=0.001)
 
     q_d_v = np.gradient(thetas_values_w[:,::2], t_values_w,axis=0)
 
@@ -140,7 +201,7 @@ for jhk in range(len(Try_list)):
     thetas_values_w = thetas_values_w[:,::2]
 
 
-    #print("Deviation gradient q0",np.linalg.norm(q_d_v - test)) #tres important
+    print("Deviation gradient q0",np.linalg.norm(q_d_v - test)) #tres important
 
 
 
@@ -169,7 +230,7 @@ for jhk in range(len(Try_list)):
 
     Forces_vec = Forces_vector(F_ext_func,t_values_s)
 
-    Exp_matrix = Catalog_to_experience_matrix(Nb_t,Coord_number,Catalog,Symb,t,thetas_values_n,t_values,subsample=Subsample)
+    Exp_matrix = Catalog_to_experience_matrix(Nb_t,Coord_number,Catalog,Symb,t,thetas_values_n,t_values,subsample=Subsample,Frottement=(len(Frotement)>0))
 
     Exp_norm,reduction,Variance = Normalize_exp(Exp_matrix,null_effect=True)
 
@@ -182,28 +243,42 @@ for jhk in range(len(Try_list)):
 
     Solution[np.abs(Solution)< np.max(np.abs(Solution))*tr] = 0
 
-    Erreur = np.linalg.norm( Solution-Solution_ideal)/np.linalg.norm(Solution_ideal)
+    Erreur = np.linalg.norm( Solution/np.max(Solution)-Solution_ideal/np.max(Solution_ideal))/np.linalg.norm(Solution_ideal/np.max(Solution_ideal))
 
     print("Erreur de resolution coeff :",Erreur)
+    print("sparsity : ",np.sum(np.where(Solution > 0,1,0)))
 
     Try_list[jhk] = Erreur
 
+    # if Erreur < 0.08:
+    #     print("yipee")
+    #     break
+
+
+
 print("experience finale : ",Try_list)
-print("experience finale MEAN : ",np.mean(Try_list))
+print("experience finale MEAN : ",np.nanmean(Try_list))
 
 
-Modele_fit = Make_Solution_exp(Solution[:,0],Catalog)
+Modele_fit = Make_Solution_exp(Solution[:,0],Catalog,Frottement=len(Frotement))
+
+print("Modele fit",Modele_fit)
+
+Modele_ideal = Make_Solution_exp(Solution_ideal[:,0],Catalog,Frottement=len(Frotement))
+
+print("Modele ideal",Modele_ideal)
 
 fig, axs = plt.subplots(3, 3)
 
 fig.suptitle("Resultat Experience Double pendule"+str(Noise_sigma))
 
 
-Acc_func2 , Model_Valid =  Lagrangian_to_Acc_func(Modele_fit, Symb, t, Substitution,fluid_f=Frotement)
+Acc_func2 , Model_Valid =  Lagrangian_to_Acc_func(Modele_fit, Symb, t, Substitution,fluid_f=Solution[-len(Frotement):,0])
 
 
 
 #Simulation temporelle
+
 
 axs[0,0].set_title("Resultat temporelle q0")
 axs[1,0].set_title("Resultat temporelle q1")
@@ -219,7 +294,7 @@ axs[1,0].plot(t_values,thetas_values[:,1]+np.random.normal(0,Noise_sigma,thetas_
 
 if (Model_Valid):
     Dynamics_system_2 = Dynamics_f(Acc_func2, F_ext_func)
-    t_values_v, thetas_values_v = Run_RK45(Dynamics_system_2, Y0, Time_end, max_step=0.01)
+    t_values_v, thetas_values_v = Run_RK45(Dynamics_system_2, Y0, Time_end, max_step=0.05)
 
     axs[0, 0].plot(t_values_v, thetas_values_v[:, 0], "--", label="Exp")
 

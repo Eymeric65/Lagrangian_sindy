@@ -77,7 +77,7 @@ def Lasso_reg(F_vec,Exp_norm):
     #print("Lasso alpha : ", alpha)
 
     # Set best alpha
-    lasso_best = Lasso(alpha=model.alpha_)
+    lasso_best = Lasso(alpha=model.alpha_,max_iter=10**6)
     lasso_best.fit(Exp_norm, Y)
 
     coeff = lasso_best.coef_

@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.integrate import RK45
+from function.Render import printProgress
 def Dynamics_f(Acc, Fext): # Transform a function Array like this [[q0_dd(q0,q0_d,f0)],...,[qk_dd(qk,qk_d,fk)]] into a function Dynamics(t,[q0,q0_d,...,qk,qk_d])
     def func(t, State):
         #State is a list [q0,q0_d,...,qk,qk_d]
@@ -41,14 +42,22 @@ def Run_RK45(dynamics, Y0, Time_end,max_step=0.05):  #Run a RK45 integration on 
         #         #print("End step : ", i)
         #
         #         break
-        while Model.status != "finished":
-            Model.step()
-            t_v.append(Model.t)
-            q_v.append(Model.y)
+        while True:
+
+            for _ in range(200):
+
+                Model.step()
+                t_v.append(Model.t)
+                q_v.append(Model.y)
+
+                if Model.status == "finished":
+                    break
+
+            printProgress(Model.t,Time_end)
 
     except RuntimeError:
 
-        print("RuntimeError")
+        print("RuntimeError of RK45 Experiment")
 
     q_v = np.array(q_v)  # Output as (k,len(t_values)) with line like this : q0,q0_d,...,qk,qk_d
     t_v = np.array(t_v)

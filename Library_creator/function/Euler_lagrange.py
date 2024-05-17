@@ -16,7 +16,7 @@ def Euler_lagranged(expr, Smatrix, t, qi):  #Euler Lagrange en symbolique take a
 def Lagrangian_to_Acc_func(L, Symbol_matrix, t, Substitution,fluid_f = 0): # Turn the Lagrangian into the complete Array function
     Qk = Symbol_matrix.shape[1]
 
-    if fluid_f ==0 :
+    if len(fluid_f) ==0 :
         fluid_f = [0 for i in range(Qk)]
     Acc = np.zeros((Qk, 1), dtype="object")
 
@@ -105,7 +105,7 @@ def Catalog_to_experience_matrix(Nt,Qt,Catalog,Sm,t,q_v,q_t,subsample=1,noise=0,
             Exp_Mat[i * Nt_s:(i + 1) * (Nt_s), j] = Func_pick(q_matrix)
 
         if(Frottement):
-            Exp_Mat[i * Nt_s:(i + 1) * (Nt_s), -1] = q_d_v[::subsample]
+            Exp_Mat[i * Nt_s:(i + 1) * (Nt_s), len(Catalog_lambded)+i] = q_d_v[::subsample,i]
 
 
 

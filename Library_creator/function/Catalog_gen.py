@@ -125,11 +125,11 @@ def Make_Solution_vec(exp,Catalog,Frottement=[]):
 
     return Solution
 
-def Make_Solution_exp(Solution,Catalog):
+def Make_Solution_exp(Solution,Catalog,Frottement=0):
 
     Modele = 0
 
-    for i in range(len(Solution)):
+    for i in range(len(Solution)-Frottement):
 
         Modele += Solution[i]*Catalog[i]
 

@@ -70,7 +70,7 @@ L = (1 / 2 * (m1 + m2) * l1 ** 2 * theta1_d ** 2 + 1 / 2 * m2 * l2 ** 2 * theta2
     theta2))
 
 #Frotement = [-0.0,-0.0]
-Frotement = [0.0,0.0]
+Frotement = [-0.1,-0.13]
 
 Acc_func,_ = Lagrangian_to_Acc_func(L, Symb, t, Substitution,fluid_f=Frotement)
 
@@ -126,7 +126,7 @@ S_index = (Solution_ideal[:-len(Frotement)] != 0).nonzero()[0]
 print(S_index)
 
 #add_new_comp = 15
-add_new_comp = 0
+add_new_comp = 60
 
 count = np.array(range(len(Catalog)))
 
@@ -146,6 +146,8 @@ print(Catalog)
 
 print("Sol ideal",Solution_ideal.shape)
 print("Sol ideal fact",len((Solution_ideal != 0).nonzero()[0]))
+
+print(Solution_ideal)
 
 
 
@@ -218,9 +220,13 @@ fig.suptitle("Resultat Experience Double pendule"+str(Noise_sigma))
 
 print("Sol ",Solution.shape)
 
-Acc_func2 , Model_Valid =  Lagrangian_to_Acc_func(Modele_fit, Symb, t, Substitution,fluid_f=Frotement)
+Acc_func2 , Model_Valid =  Lagrangian_to_Acc_func(Modele_fit, Symb, t, Substitution,fluid_f=Solution[-len(Frotement):,0])
 
 #Simulation temporelle
+
+axs[2,2].matshow(np.abs(Exp_matrix))
+axs[2,2].set_aspect('auto')
+
 
 axs[0,0].set_title("Resultat temporelle q0")
 axs[1,0].set_title("Resultat temporelle q1")
