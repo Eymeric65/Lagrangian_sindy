@@ -1,7 +1,10 @@
+import sys
+
 import matplotlib.animation as animation
 import matplotlib.pyplot as plt
 import numpy as np
-import sys
+
+
 def Animate_Single_pendulum(L, q_v, t_v):
 
     x = L* np.sin(q_v[:, 0])

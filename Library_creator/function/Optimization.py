@@ -63,11 +63,11 @@ def Hard_treshold_sparse_regression(Exp_matrix,Forces_vec_s,Catalog,cond=Conditi
 
     return Modele_fit,ret_sol,reduction,step
 
-def Lasso_reg(F_vec,Exp_norm):
+def Lasso_reg(F_vec,Exp_norm,m_iter=10**6,tol=10**-6,eps=5*10**-6):
 
     Y = F_vec[:, 0]
 
-    model = LassoCV(cv=5, random_state=0, max_iter=10**6)
+    model = LassoCV(cv=5, random_state=0, max_iter=m_iter,eps=eps,tol=tol)
 
     # Fit model
     model.fit(Exp_norm, Y)
@@ -77,7 +77,7 @@ def Lasso_reg(F_vec,Exp_norm):
     #print("Lasso alpha : ", alpha)
 
     # Set best alpha
-    lasso_best = Lasso(alpha=model.alpha_,max_iter=10**6)
+    lasso_best = Lasso(alpha=model.alpha_,max_iter=m_iter,tol=tol)
     lasso_best.fit(Exp_norm, Y)
 
     coeff = lasso_best.coef_

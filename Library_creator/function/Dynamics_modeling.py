@@ -1,6 +1,9 @@
 import numpy as np
+from .Render import printProgress
+from scipy import interpolate
 from scipy.integrate import RK45
-from function.Render import printProgress
+
+
 def Dynamics_f(Acc, Fext): # Transform a function Array like this [[q0_dd(q0,q0_d,f0)],...,[qk_dd(qk,qk_d,fk)]] into a function Dynamics(t,[q0,q0_d,...,qk,qk_d])
     def func(t, State):
         #State is a list [q0,q0_d,...,qk,qk_d]
@@ -42,16 +45,16 @@ def Run_RK45(dynamics, Y0, Time_end,max_step=0.05):  #Run a RK45 integration on 
         #         #print("End step : ", i)
         #
         #         break
-        while True:
+        while Model.status != "finished":
 
             for _ in range(200):
+                if Model.status != "finished":
 
-                Model.step()
-                t_v.append(Model.t)
-                q_v.append(Model.y)
+                    Model.step()
+                    t_v.append(Model.t)
+                    q_v.append(Model.y)
 
-                if Model.status == "finished":
-                    break
+
 
             printProgress(Model.t,Time_end)
 
@@ -62,3 +65,40 @@ def Run_RK45(dynamics, Y0, Time_end,max_step=0.05):  #Run a RK45 integration on 
     q_v = np.array(q_v)  # Output as (k,len(t_values)) with line like this : q0,q0_d,...,qk,qk_d
     t_v = np.array(t_v)
     return t_v, q_v
+
+# Forces creation
+
+def F_gen(M_span,periode_shift,Time_end,periode,Coord_number):
+
+    F_ext_time = np.arange(0,Time_end+periode,periode)
+
+    f_nbt = len(F_ext_time)
+
+    F_ext_time = F_ext_time + (np.random.random((f_nbt,))-0.5)*2*periode_shift
+
+    F_ext_Value = (np.random.random((Coord_number,f_nbt))-0.5)*2*M_span
+
+    return interpolate.CubicSpline(F_ext_time, F_ext_Value, axis=1)
+
+def concat_f(arr):
+
+    def ret(t):
+
+        out = arr[0](t)
+
+        for f in arr[1:]:
+
+            out += f(t)
+
+        return out
+
+    return ret
+
+def F_gen_c(M_span,periode_shift,Time_end,periode,Coord_number,aug=50):
+
+    f_arr = []
+
+    for i in range(1, aug):
+        f_arr += [F_gen(M_span / (1 + np.log(aug)) / (i), periode_shift / i, Time_end, periode / i,Coord_number)]
+
+    return concat_f(f_arr)

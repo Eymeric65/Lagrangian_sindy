@@ -1,5 +1,6 @@
-import sympy as sp
 import numpy as np
+import sympy as sp
+
 
 def Catalog_gen_p(f_cat,qk,prof,im,jm,puissance,puissance_init): # Not everything lol
 

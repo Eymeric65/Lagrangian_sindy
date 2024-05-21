@@ -1,5 +1,6 @@
-import sympy as sp
 import numpy as np
+import sympy as sp
+
 
 def Euler_lagranged(expr, Smatrix, t, qi):  #Euler Lagrange en symbolique take an expression of the lagrangian, an Symbol matrix, the symbolic for t, and the indice for the transformation
     dL_dq = sp.diff(expr, Smatrix[1, qi])
@@ -61,12 +62,12 @@ def Lagrangian_to_Acc_func(L, Symbol_matrix, t, Substitution,fluid_f = 0): # Tur
 
     return Acc_lambda,Valid
 
-def Catalog_to_experience_matrix(Nt,Qt,Catalog,Sm,t,q_v,q_t,subsample=1,noise=0,Frottement=False):
+def Catalog_to_experience_matrix(Nt,Qt,Catalog,Sm,t,q_v,q_t,subsample=1,noise=0,Frottement=False,troncature=0):
     #print(Nt)
     #print(Nt//subsample)
     #print(Nt/2 != Nt//2)
 
-    Nt_s = len(q_v[::subsample])
+    Nt_s = len(q_v[troncature::subsample])
 
     Exp_Mat = np.zeros(((Nt_s) * Qt, len(Catalog)+int(Frottement)*Qt))
 
@@ -75,9 +76,9 @@ def Catalog_to_experience_matrix(Nt,Qt,Catalog,Sm,t,q_v,q_t,subsample=1,noise=0,
 
     q_matrix = np.zeros((Sm.shape[0],Sm.shape[1],Nt_s))
 
-    q_matrix[1, :, :] = np.transpose(q_v[::subsample])
-    q_matrix[2, :, :] = np.transpose(q_d_v[::subsample])
-    q_matrix[3, :, :] = np.transpose(q_dd_v[::subsample])
+    q_matrix[1, :, :] = np.transpose(q_v[troncature::subsample])
+    q_matrix[2, :, :] = np.transpose(q_d_v[troncature::subsample])
+    q_matrix[3, :, :] = np.transpose(q_dd_v[troncature::subsample])
 
     q_matrix = q_matrix + np.random.normal(0,noise,q_matrix.shape)
 
@@ -105,7 +106,7 @@ def Catalog_to_experience_matrix(Nt,Qt,Catalog,Sm,t,q_v,q_t,subsample=1,noise=0,
             Exp_Mat[i * Nt_s:(i + 1) * (Nt_s), j] = Func_pick(q_matrix)
 
         if(Frottement):
-            Exp_Mat[i * Nt_s:(i + 1) * (Nt_s), len(Catalog_lambded)+i] = q_d_v[::subsample,i]
+            Exp_Mat[i * Nt_s:(i + 1) * (Nt_s), len(Catalog_lambded)+i] = q_d_v[troncature::subsample,i]
 
 
 
