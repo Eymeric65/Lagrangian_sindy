@@ -27,7 +27,7 @@ def Run_RK45(dynamics, Y0, Time_end,max_step=0.05):  #Run a RK45 integration on 
 
     Y0_f = np.reshape(Y0, (-1,))  # de la forme(2*k,)
     Model = RK45(dynamics, 0, Y0_f, Time_end, max_step, 0.001, np.e ** -6)
-
+    #Model = RK45(dynamics, 0, Y0_f, Time_end, max_step, 10**-9 , 10 ** -16)
     # collect data
     t_v = []
     q_v = []
@@ -68,7 +68,7 @@ def Run_RK45(dynamics, Y0, Time_end,max_step=0.05):  #Run a RK45 integration on 
 
 # Forces creation
 
-def F_gen(M_span,periode_shift,Time_end,periode,Coord_number):
+def F_gen_v(M_var,periode_shift,Time_end,periode,Coord_number):
 
     F_ext_time = np.arange(0,Time_end+periode,periode)
 
@@ -76,7 +76,31 @@ def F_gen(M_span,periode_shift,Time_end,periode,Coord_number):
 
     F_ext_time = F_ext_time + (np.random.random((f_nbt,))-0.5)*2*periode_shift
 
-    F_ext_Value = (np.random.random((Coord_number,f_nbt))-0.5)*2*M_span
+    F_ext_Value = (np.random.random_sample((Coord_number,f_nbt))*2-1)
+
+    F_ext_Value = F_ext_Value/np.std(F_ext_Value)*np.sqrt(M_var)/0.87
+
+
+
+    return interpolate.CubicSpline(F_ext_time, F_ext_Value, axis=1)
+
+def F_gen_a(M_span,periode_shift,Time_end,periode,Coord_number):
+
+    F_ext_time = np.arange(0,Time_end+periode,periode)
+
+    f_nbt = len(F_ext_time)
+
+    F_ext_time = F_ext_time + (np.random.random((f_nbt,))-0.5)*2*periode_shift
+
+
+
+    F_ext_Value = (np.random.normal((Coord_number,f_nbt))*2-1)*M_span
+
+    amp = (np.max(F_ext_Value)-np.min(F_ext_Value))/2
+
+    F_ext_Value = F_ext_Value/amp*M_span
+
+    print("max",M_span)
 
     return interpolate.CubicSpline(F_ext_time, F_ext_Value, axis=1)
 
@@ -94,11 +118,72 @@ def concat_f(arr):
 
     return ret
 
-def F_gen_c(M_span,periode_shift,Time_end,periode,Coord_number,aug=50):
+def F_gen_c(M_span,periode_shift,Time_end,periode,Coord_number,aug=50,method="a"):
 
     f_arr = []
 
+    p=0
+
+    if method == "v":
+        F_gen = F_gen_v
+    else :
+        F_gen = F_gen_a
+
+    for i in range(1,aug):
+
+        p+= 1/(i)
+
     for i in range(1, aug):
-        f_arr += [F_gen(M_span / (1 + np.log(aug)) / (i), periode_shift / i, Time_end, periode / i,Coord_number)]
+        f_arr += [F_gen(M_span / p / i, periode_shift / (i*2), Time_end, periode / (i*2),Coord_number)]
 
     return concat_f(f_arr)
+
+def F_gen_r(Time_end,aug,aug_i,periode_i,periode_shift_i,c_number):
+
+    if aug == aug_i:
+
+        return lambda x : x*np.zeros((c_number,1))
+
+    else:
+
+
+        F_b = F_gen_r(Time_end,aug+1,aug_i,periode_i,periode_shift_i,c_number)
+
+        m = (aug_i-aug)
+
+        periode = periode_i/m
+        periode_shift = periode_shift_i/m
+        variance = 1/m
+
+        time_list = np.arange(0, Time_end + periode, periode)
+        tl = len(time_list)
+        time_list = time_list + (np.random.random((tl,))-0.5)*2*periode_shift
+
+        F_ext_Value = (np.random.random_sample((c_number, tl)) * 2 - 1) * variance + F_b(time_list)
+
+        F_ext_Value = F_ext_Value/np.std(F_ext_Value)
+
+        return interpolate.CubicSpline(time_list, F_ext_Value, axis=1)
+
+def F_gen_opt(c_n,V,Time_end,periode,periode_shift,aug=50):
+
+
+    V = np.reshape(V,(c_n,1))# Top disgusting Python line
+
+    F = F_gen_r(Time_end,0,aug,periode,periode_shift,c_n)
+
+    def norm(t):
+
+        if(len(F(t).shape)==1):
+            return F(t) * V.flatten()
+        else:
+            return F(t)*V
+
+    return norm
+
+
+
+
+
+
+

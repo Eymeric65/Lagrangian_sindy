@@ -5,7 +5,7 @@ from .Euler_lagrange import *
 from .Optimization import *
 
 
-def Execute_Regression(t_values,thetas_values,t,Symb,Catalog,F_ext_func,Noise=0,troncature=5,Subsample=0,Hard_tr=10**-3):
+def Execute_Regression(t_values,thetas_values,t,Symb,Catalog,F_ext_func,Noise=0,troncature=5,Subsample=0,Hard_tr=10**-3,q_d_v=[],q_dd_v=[]):
 
     Nb_t = len(t_values)
 
@@ -15,7 +15,7 @@ def Execute_Regression(t_values,thetas_values,t,Symb,Catalog,F_ext_func,Noise=0,
 
     Forces_vec = Forces_vector(F_ext_func,t_values_s)
 
-    Exp_matrix = Catalog_to_experience_matrix(Nb_t,Coord_number,Catalog,Symb,t,thetas_values,t_values,subsample=Subsample,Frottement=True,troncature=troncature,noise=Noise)
+    Exp_matrix = Catalog_to_experience_matrix(Nb_t,Coord_number,Catalog,Symb,t,thetas_values,t_values,subsample=Subsample,Frottement=True,troncature=troncature,noise=Noise,q_d_v=q_d_v,q_dd_v=q_dd_v)
 
     Exp_norm,reduction,Variance = Normalize_exp(Exp_matrix,null_effect=True)
 

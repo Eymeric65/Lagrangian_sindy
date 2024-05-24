@@ -63,7 +63,7 @@ def Hard_treshold_sparse_regression(Exp_matrix,Forces_vec_s,Catalog,cond=Conditi
 
     return Modele_fit,ret_sol,reduction,step
 
-def Lasso_reg(F_vec,Exp_norm,m_iter=10**6,tol=10**-6,eps=5*10**-6):
+def Lasso_reg(F_vec,Exp_norm,m_iter=10**5,tol=10**-5,eps=10**-3): # Perfect m_iter=10**6,tol=10**-6,eps=5*10**-6
 
     Y = F_vec[:, 0]
 

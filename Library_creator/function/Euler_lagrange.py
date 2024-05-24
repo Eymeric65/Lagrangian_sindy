@@ -27,25 +27,30 @@ def Lagrangian_to_Acc_func(L, Symbol_matrix, t, Substitution,fluid_f = 0): # Tur
 
     for i in range(Qk):  # Derive the k expression for dynamics #LOL les equations sont couplées en gros mdrrrrrrr
 
-        Dyn = Euler_lagranged(L, Symbol_matrix, t, i) - Symbol_matrix[0, i] + fluid_f[i]*Symbol_matrix[2, i] # Add the Fext term
-        #print("Dyn",i," : ",Dyn)
+        Dyn = Euler_lagranged(L, Symbol_matrix, t, i) - Symbol_matrix[0, i] # + fluid_f[i]*Symbol_matrix[2, i]  # Add the Fext term
+
+        # Hardcodage matrice de dissipation pour un systeme en chaine (interagit deux a deux)
+
+        Dyn += fluid_f[i]*Symbol_matrix[2, i]
+
+        if(i<(Qk-1)):
+            Dyn += fluid_f[i+1]*Symbol_matrix[2, i]
+            Dyn += - fluid_f[i+1]*Symbol_matrix[2, i+1]
+
+        if(i>0):
+
+            Dyn+= - fluid_f[i]*Symbol_matrix[2, i-1]
+
+        # ------------------------------------
 
         if( Symbol_matrix[3,i] in Dyn.atoms(sp.Function) ):
 
-            #Acc_s = sp.solve(Dyn, Symbol_matrix[3, i])
-
-            #print("Acc_s",i," : ",Acc_s)
-            #Acc_s = Acc_s[0]
-
-            #Acc[i, 0] = Acc_s.subs(Substitution)
             dyn[i] = Dyn.subs(Substitution)
 
         else:
             Valid = False
             break
 
-        #Valid = Valid and  ( Symbol_matrix[3,i] in Dyn.atoms(sp.Function) )
-    #print(Acc)
     if(Valid):
         Solution_S = sp.solve(dyn,Symbol_matrix[3, :])
         if isinstance(Solution_S,dict) :
@@ -56,13 +61,11 @@ def Lagrangian_to_Acc_func(L, Symbol_matrix, t, Substitution,fluid_f = 0): # Tur
 
         Acc[:,0]= Sol #LA SOLUTION
 
-    #print(list(sp.solve(dyn,Symbol_matrix[3, :]).values()))
-
     Acc_lambda = sp.lambdify([Symbol_matrix], Acc)  # Lambdify under the input of Symbol_matrix
 
     return Acc_lambda,Valid
 
-def Catalog_to_experience_matrix(Nt,Qt,Catalog,Sm,t,q_v,q_t,subsample=1,noise=0,Frottement=False,troncature=0):
+def Catalog_to_experience_matrix(Nt,Qt,Catalog,Sm,t,q_v,q_t,subsample=1,noise=0,Frottement=False,troncature=0,q_d_v=[],q_dd_v=[]):
     #print(Nt)
     #print(Nt//subsample)
     #print(Nt/2 != Nt//2)
@@ -71,8 +74,10 @@ def Catalog_to_experience_matrix(Nt,Qt,Catalog,Sm,t,q_v,q_t,subsample=1,noise=0,
 
     Exp_Mat = np.zeros(((Nt_s) * Qt, len(Catalog)+int(Frottement)*Qt))
 
-    q_d_v = np.gradient(q_v,q_t,axis=0)
-    q_dd_v= np.gradient(q_d_v,q_t,axis=0)
+    if len(q_d_v) == 0 :
+        q_d_v = np.gradient(q_v,q_t,axis=0)
+    if len(q_dd_v) == 0:
+        q_dd_v= np.gradient(q_d_v,q_t,axis=0)
 
     q_matrix = np.zeros((Sm.shape[0],Sm.shape[1],Nt_s))
 
