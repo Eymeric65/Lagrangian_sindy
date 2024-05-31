@@ -140,7 +140,7 @@ Y0 = np.array([[0, 0], [0, 0]])  # De la forme (k,2)
 
 Frotement = [-0.0,-0.0]
 
-Acc_func,_ = Lagrangian_to_Acc_func(L, Symb, t, Substitution,fluid_f=Frotement)
+Acc_func,_ = Lagrangian_to_Acc_func(L, Symb, t, Substitution, fluid_f=Frotement)
 
 Dynamics_system = Dynamics_f(Acc_func,F_ext_func)
 
@@ -251,7 +251,7 @@ fig.suptitle("Resultat Experience Double pendule"+str(Noise_sigma))
 
 #print("Sol ",Solution.shape)
 
-Acc_func2 , Model_Valid =  Lagrangian_to_Acc_func(Modele_fit, Symb, t, Substitution,fluid_f=Frotement)
+Acc_func2 , Model_Valid = Lagrangian_to_Acc_func(Modele_fit, Symb, t, Substitution, fluid_f=Frotement)
 
 #Simulation temporelle
 

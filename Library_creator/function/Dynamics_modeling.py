@@ -62,8 +62,9 @@ def Run_RK45(dynamics, Y0, Time_end,max_step=0.05):  #Run a RK45 integration on 
 
         print("RuntimeError of RK45 Experiment")
 
-    q_v = np.array(q_v)  # Output as (k,len(t_values)) with line like this : q0,q0_d,...,qk,qk_d
     t_v = np.array(t_v)
+    q_v = np.array(q_v)
+
     return t_v, q_v
 
 # Forces creation

@@ -37,7 +37,7 @@ Y0 = np.array([[2, 0]])  # De la forme (k,2)
 
 L_System = m*l**2/2*theta_d(t)**2+sp.cos(theta(t))*l*m*g
 
-Dynamics_system = Dynamics_f(Lagrangian_to_Acc_func(L_System, Symbol_matrix, t, Substitution,fluid_f=0.0),F_ext_func)
+Dynamics_system = Dynamics_f(Lagrangian_to_Acc_func(L_System, Symbol_matrix, t, Substitution, fluid_f=0.0), F_ext_func)
 
 t_values, theta_values = Run_RK45(Dynamics_system, Y0, Time_end)
 

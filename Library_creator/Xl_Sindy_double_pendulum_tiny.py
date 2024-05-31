@@ -2,6 +2,24 @@ from function.Simulation import *
 import matplotlib.pyplot as plt
 # Setup problem
 
+L1t = .2
+L2t = .2
+m_1 = .1
+m_2 = .1
+
+Y0 = np.array([[0, 0], [0, 0]])  # De la forme (k,2)
+
+Frotement = [-1.62,-1.62]
+
+# Force variable
+periode = 3 #
+periode_shift = 0.5
+
+M_span = [0.0,0.0] # Max span
+
+N_periode = 4# In one periode they will be Surfacteur*N_Periode/Cat_len time tick
+
+
 t = sp.symbols("t")
 
 
@@ -29,7 +47,6 @@ L = (1 / 2 * (m1 + m2) * l1 ** 2 * theta1_d ** 2 + 1 / 2 * m2 * l2 ** 2 * theta2
 
 Y0 = np.array([[0, 0], [0, 0]])  # De la forme (k,2)
 
-Frotement = [-1.62,-1.62]
 
 Solve = False
 
@@ -71,11 +88,10 @@ Cat_len = len(Catalog)
 # Parametre
 Surfacteur=Cat_len*30 # La base
 
-periode = 3 #
+
 
 #Time_end = periode*10
 
-N_periode = 20# In one periode they will be Surfacteur*N_Periode/Cat_len time tick
 
 #Time_end = periode * 100
 Time_end = periode * Cat_len/N_periode
@@ -88,9 +104,7 @@ NbTry = 1
 T_cut = Time_end * 0.7
 
 #M_span=1.2
-M_span = [12,8] # Max span
 
-periode_shift = 0.5
 
 
 #----------------External Forces--------------------
@@ -104,11 +118,11 @@ F_ext_func = F_gen_opt(Coord_number,M_span,Time_end,periode,periode_shift,aug=50
 troncature = 5
 # Creation des schema de simulation
 
-Acc_func,_ = Lagrangian_to_Acc_func(L, Symb, t, Substitution,fluid_f=Frotement)
+Acc_func,_ = Lagrangian_to_Acc_func(L, Symb, t, Substitution, fluid_f=Frotement)
 
 Dynamics_system = Dynamics_f(Acc_func,F_ext_func)
 
-t_values_w, thetas_values_w = Run_RK45(Dynamics_system, Y0, Time_end,max_step=0.005)
+t_values_w, thetas_values_w = Run_RK45(Dynamics_system, Y0, Time_end,max_step=0.002)
 
 q_d_v_g = np.gradient(thetas_values_w[:,::2], t_values_w,axis=0,edge_order=2)
 
@@ -154,7 +168,8 @@ fig.suptitle("Resultat Experience Double pendule"+str(Noise_sigma))
 
 if Solve :
 
-    Acc_func2 , Model_Valid =  Lagrangian_to_Acc_func(Modele_fit, Symb, t, Substitution,fluid_f=Solution[-len(Frotement):,0])
+    Acc_func2 , Model_Valid = Lagrangian_to_Acc_func(Modele_fit, Symb, t, Substitution,
+                                                     fluid_f=Solution[-len(Frotement):, 0])
 
 else :
     Model_Valid = False

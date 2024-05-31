@@ -29,10 +29,17 @@ m1, l1, m2, l2, g = sp.symbols("m1 l1 m2 l2 g")
 
 L1t = 0.2
 L2t = 0.2
+
+m_1 = .1
+m_2 = .1
+Frotement = [-0.6,-0.0]
+
 Lt = L1t + L2t
-Substitution = {"g": 9.81, "l1": L1t, "m1": 0.1, "l2": L2t, "m2": 0.1}
+Substitution = {"g": 9.81, "l1": L1t, "m1": m_1, "l2": L2t, "m2": m_2}
 
 Time_end = 5
+
+Y0 = np.array([[2, 0], [0, 0]])  # De la forme (k,2)
 
 #----------------External Forces--------------------
 
@@ -54,13 +61,12 @@ def F_ext3(t):
 F_ext_func = F_ext3
 # ---------------------------
 
-Y0 = np.array([[2, 0], [0, 0]])  # De la forme (k,2)
 
 L = (1 / 2 * (m1 + m2) * l1 ** 2 * theta1_d ** 2 + 1 / 2 * m2 * l2 ** 2 * theta2_d ** 2 + m2 * l1 * l2 * theta1_d
      * theta2_d * sp.cos(theta1 - theta2) + (m1 + m2) * g * l1 * sp.cos(theta1) + m2 * g * l2 * sp.cos(
     theta2))
 
-Frotement = [-0.0,-0.0]
+
 
 Acc_func,_ = Lagrangian_to_Acc_func(L, Symb, t, Substitution,fluid_f=Frotement)
 
@@ -168,7 +174,7 @@ Is_Frottement = Frotement!=0
 
 
 
-Exp_matrix = Catalog_to_experience_matrix(Nb_t,Coord_number,Catalog,Symb,t,thetas_values_n,t_values)
+Exp_matrix = Catalog_to_experience_matrix(Nb_t,Coord_number,Catalog,Symb,t,thetas_values_n,t_values,Frottement=True)
 
 print(Exp_matrix.shape)
 

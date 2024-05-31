@@ -192,7 +192,7 @@ for jhk in range(len(Try_list)):
     troncature = 5
     # Creation des schema de simulation
 
-    Acc_func,_ = Lagrangian_to_Acc_func(L, Symb, t, Substitution,fluid_f=Frotement)
+    Acc_func,_ = Lagrangian_to_Acc_func(L, Symb, t, Substitution, fluid_f=Frotement)
 
     Dynamics_system = Dynamics_f(Acc_func,F_ext_func)
 
@@ -271,7 +271,8 @@ fig, axs = plt.subplots(3, 3)
 fig.suptitle("Resultat Experience Double pendule"+str(Noise_sigma))
 
 
-Acc_func2 , Model_Valid =  Lagrangian_to_Acc_func(Modele_fit, Symb, t, Substitution,fluid_f=Solution[-len(Frotement):,0])
+Acc_func2 , Model_Valid = Lagrangian_to_Acc_func(Modele_fit, Symb, t, Substitution,
+                                                 fluid_f=Solution[-len(Frotement):, 0])
 
 
 

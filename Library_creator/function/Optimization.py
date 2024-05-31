@@ -10,6 +10,58 @@ def Condition_val(Exp,solution):
 
     return np.abs((np.var(Exp, axis=0) * solution[:, 0]))
 
+
+def Optimal_sampling(ThetaV,dist_s):
+
+    Nb_v = ThetaV.shape[0]
+
+    res = np.empty(ThetaV.shape)
+    ind = np.zeros((Nb_v,),dtype=int)
+
+    res[0,:]=ThetaV[0,:]
+
+    q=1
+
+    for i in range(1,Nb_v):
+
+
+        point = ThetaV[i,:]
+        dist = np.sqrt(np.min(np.sum(np.power(res[:q,:]-point,2),axis=1)))
+
+        if dist>dist_s:
+
+            res[q,:]=point
+            ind[q] = i
+            q+=1
+
+    return ind[:q]
+def Optimal_sampling_2(ThetaV,dist_s): # Moins performant
+
+    Nb_v = ThetaV.shape[0]
+
+    res = np.empty(ThetaV.shape)
+    ind = np.zeros((Nb_v,),dtype=int)
+
+    res[0,:]=ThetaV[0,:]
+
+    q=1
+
+    for i in range(1,Nb_v):
+
+
+        point = ThetaV[i,:]
+        dist = np.sqrt(np.min(np.sum(np.power(res[:q,:]-point,2),axis=1)))
+
+        if dist>dist_s:
+
+            res[q,:]=point
+            ind[q] = i
+            q+=1
+
+    return ind[:q]
+
+
+
 def Hard_treshold_sparse_regression(Exp_matrix,Forces_vec_s,Catalog,cond=Condition_val,Recup_Threshold = 0.03):
 
     Solution_r, residual, rank, _ = np.linalg.lstsq(Exp_matrix, Forces_vec_s, rcond=None)
@@ -63,7 +115,10 @@ def Hard_treshold_sparse_regression(Exp_matrix,Forces_vec_s,Catalog,cond=Conditi
 
     return Modele_fit,ret_sol,reduction,step
 
-def Lasso_reg(F_vec,Exp_norm,m_iter=10**5,tol=10**-5,eps=10**-3): # Perfect m_iter=10**6,tol=10**-6,eps=5*10**-6
+# Reglage intermediaire : m_iter=10**5,tol=10**-5,eps=10**-3
+# Reglage parfait :  m_iter=10**6,tol=10**-6,eps=5*10**-6
+
+def Lasso_reg(F_vec,Exp_norm,m_iter=10**4,tol=10**-5,eps=5*10**-4): # Perfect m_iter=10**6,tol=10**-6,eps=5*10**-6
 
     Y = F_vec[:, 0]
 

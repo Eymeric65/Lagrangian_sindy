@@ -53,7 +53,7 @@ L_System = m*l**2/2*theta_d**2+sp.cos(theta)*l*m*g
 
 Frotement = [-0.3]
 
-Acc_func,_ = Lagrangian_to_Acc_func(L_System, Symb, t, Substitution,fluid_f=Frotement)
+Acc_func,_ = Lagrangian_to_Acc_func(L_System, Symb, t, Substitution, fluid_f=Frotement)
 
 Dynamics_system = Dynamics_f(Acc_func,F_ext_func)
 
@@ -133,7 +133,7 @@ axs[0,0].set_title("Resultat temporelle")
 axs[0,0].plot(t_values_w,thetas_values_w[:,0],label="extended")
 axs[0,0].plot(t_values,thetas_values[:,0]+np.random.normal(0,Noise_sigma,thetas_values[:,0].shape),label="fit")
 
-Acc_func2 , Model_Valid =  Lagrangian_to_Acc_func(Modele_fit, Symb, t, Substitution,fluid_f=Frottement_coeff)
+Acc_func2 , Model_Valid = Lagrangian_to_Acc_func(Modele_fit, Symb, t, Substitution, fluid_f=Frottement_coeff)
 
 if(Model_Valid):
 

@@ -50,7 +50,7 @@ L = 1 / 2 * (m1 + m2) * l1 ** 2 * theta1_d(t) ** 2 + 1 / 2 * m2 * l2 ** 2 * thet
     t) * theta2_d(t) * sp.cos(theta1(t) - theta2(t)) + (m1 + m2) * g * l1 * sp.cos(theta1(t)) + m2 * g * l2 * sp.cos(
     theta2(t))
 
-Dynamics_system = Dynamics_f(Lagrangian_to_Acc_func(L, Symbol_matrix, t, Substitution,fluid_f=0.0),F_ext_func)
+Dynamics_system = Dynamics_f(Lagrangian_to_Acc_func(L, Symbol_matrix, t, Substitution, fluid_f=0.0), F_ext_func)
 
 t_values, theta_values = Run_RK45(Dynamics_system, Y0, Time_end)
 

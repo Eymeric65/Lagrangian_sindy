@@ -39,7 +39,7 @@ def controller(model,data):
 
   # data.ctrl[0] = -F[0]
   # data.ctrl[1] = -F[1]
-  data.qfrc_applied[0] = -F[0]-F[1] # A etudier
+  data.qfrc_applied[0] = -F[0] #-F[1] # A etudier
   data.qfrc_applied[1] = -F[1]
 
   time_l.append(data.time)
@@ -97,7 +97,7 @@ with mujoco.viewer.launch_passive(m, d) as viewer:
 
   # ----------------External Forces--------------------
 
-  M_span = [8, 1]  # Max span
+  M_span = [0, 4]  # Max span
 
   periode_shift = 0.5
 
@@ -208,13 +208,13 @@ with mujoco.viewer.launch_passive(m, d) as viewer:
 
   t_values_w, thetas_values_w = Run_RK45(Dynamics_system, Y0, Time_end, max_step=0.05)
 
-  Frotement = [-0.3, -0.3]
-
-  Acc_func, _ = Lagrangian_to_Acc_func(L, Symb, t, Substitution, fluid_f=Frotement)
-
-  Dynamics_system = Dynamics_f(Acc_func, F_ext_func)
-
-  t_values_w_2, thetas_values_w_2 = Run_RK45(Dynamics_system, Y0, Time_end, max_step=0.05)
+  # Frotement = [-0.3, -0.5]
+  #
+  # Acc_func, _ = Lagrangian_to_Acc_func(L, Symb, t, Substitution, fluid_f=Frotement)
+  #
+  # Dynamics_system = Dynamics_f(Acc_func, F_ext_func)
+  #
+  # t_values_w_2, thetas_values_w_2 = Run_RK45(Dynamics_system, Y0, Time_end, max_step=0.05)
 
   # ------------------------------
 
@@ -228,11 +228,11 @@ with mujoco.viewer.launch_passive(m, d) as viewer:
 
   axs[0,0].plot(time_l,theta_v[:,0],label="Mujoco")
   axs[0, 0].plot(t_values_w, thetas_values_w[:,0], label="Simu1")
-  axs[0, 0].plot(t_values_w_2, thetas_values_w_2[:, 0], label="Simu2")
+  #axs[0, 0].plot(t_values_w_2, thetas_values_w_2[:, 0], label="Simu2")
 
   axs[1,0].plot(time_l,theta_v[:,1],label="Mujoco")
   axs[1, 0].plot(t_values_w, thetas_values_w[:,2], label="Simu1")
-  axs[1, 0].plot(t_values_w_2, thetas_values_w_2[:, 2], label="Simu2")
+  #axs[1, 0].plot(t_values_w_2, thetas_values_w_2[:, 2], label="Simu2")
 
   axs[0,0].legend()
   axs[1, 0].legend()
@@ -242,11 +242,11 @@ with mujoco.viewer.launch_passive(m, d) as viewer:
 
   axs[0,1].plot(time_l,theta_d_v[:,0],label="Mujoco")
   axs[0, 1].plot(t_values_w, thetas_values_w[:,1], label="Simu1")
-  axs[0, 1].plot(t_values_w_2, thetas_values_w_2[:, 1], label="Simu2")
+  #axs[0, 1].plot(t_values_w_2, thetas_values_w_2[:, 1], label="Simu2")
 
   axs[1,1].plot(time_l,theta_d_v[:,1],label="Mujoco")
   axs[1, 1].plot(t_values_w, thetas_values_w[:,3], label="Simu1")
-  axs[1, 1].plot(t_values_w_2, thetas_values_w_2[:, 3], label="Simu2")
+  #axs[1, 1].plot(t_values_w_2, thetas_values_w_2[:, 3], label="Simu2")
 
   axs[0,1].legend()
   axs[1, 1].legend()

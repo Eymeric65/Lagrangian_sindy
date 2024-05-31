@@ -108,48 +108,27 @@ Acc_func,_ = Lagrangian_to_Acc_func(L, Symb, t, Substitution, fluid_f=Frotement)
 
 Dynamics_system = Dynamics_f(Acc_func,F_ext_func)
 
-t_values_w, thetas_values_w = Run_RK45(Dynamics_system, Y0, Time_end,max_step=0.001)
+t_values_w, phase = Run_RK45(Dynamics_system, Y0, Time_end,max_step=0.001)
 
-q_d_v_g = np.gradient(thetas_values_w[:,::2], t_values_w,axis=0,edge_order=2)
+q_d_v_g = np.gradient(phase[:,::2], t_values_w,axis=0,edge_order=2)
 
-q_d_v = thetas_values_w[:,1::2]
+q_d_v = phase[:,1::2]
 
-thetas_values_w = thetas_values_w[:,::2]
+thetas_values_w = phase[:,::2]
 
 print("Deviation gradient q0",np.linalg.norm(q_d_v[troncature:] - q_d_v_g[troncature:])/np.linalg.norm(q_d_v[troncature:])) #tres important
 
 #Ajout du bruit
 
-Noise_sigma=  10**-3*0
+# --------------------------------------- Regression 1 -----------------------------------
 
-Nb_t = len(t_values_w)
+distance_subsampling = 0.5
 
-Subsample = Nb_t//(Surfacteur*Cat_len)
-#Subsample = 1
-
-Modele_ideal = Make_Solution_exp(Solution_ideal[:,0],Catalog,Frottement=len(Frotement))
-print("Modele ideal",Modele_ideal)
-
-Solution,Exp_matrix,t_values_s = Execute_Regression(t_values_w,thetas_values_w,t,Symb,Catalog,F_ext_func,Subsample=Subsample,q_d_v=q_d_v,reg=regression,Hard_tr=3*10**-3)
-
-if regression:
-
-    Erreur = np.linalg.norm( Solution/np.max(Solution)-Solution_ideal/np.max(Solution_ideal))/np.linalg.norm(Solution_ideal/np.max(Solution_ideal))
-    print("Erreur de resolution coeff :",Erreur)
-    print("sparsity : ",np.sum(np.where(np.abs(Solution) > 0,1,0)))
-
-
-Modele_fit = Make_Solution_exp(Solution[:,0],Catalog,Frottement=len(Frotement))
-
-
-Acc_func2 , Model_Valid = Lagrangian_to_Acc_func(Modele_fit, Symb, t, Substitution,
-                                                 fluid_f=Solution[-len(Frotement):, 0])
-
+Indices_sub = Optimal_sampling(phase[:,:2],distance_subsampling)
 
 
 fig, axs = plt.subplots(3, 4)
 
-fig.suptitle("Resultat Experience Double pendule"+str(Noise_sigma))
 
 #Simulation temporelle
 
@@ -158,14 +137,6 @@ axs[1,0].set_title("q1")
 
 axs[0,0].plot(t_values_w,thetas_values_w[:,0])
 axs[1,0].plot(t_values_w,thetas_values_w[:,1])
-
-if (Model_Valid):
-    Dynamics_system_2 = Dynamics_f(Acc_func2, F_ext_func)
-    t_values_v, thetas_values_v = Run_RK45(Dynamics_system_2, Y0, Time_end, max_step=0.05)
-
-    axs[0, 0].plot(t_values_v, thetas_values_v[:, 0], "--", label="found model")
-
-    axs[1, 0].plot(t_values_v, thetas_values_v[:, 2], "--", label="found model")
 
 axs[1,2].set_title("temporal error")
 
@@ -194,25 +165,10 @@ axs[1,2].set_title("Phase q1")
 axs[0,2].plot(thetas_values_w[:,0],q_d_v[:,0])
 axs[1,2].plot(thetas_values_w[:,1],q_d_v[:,1])
 
+axs[0,2].scatter(thetas_values_w[Indices_sub,0],q_d_v[Indices_sub,0])
+axs[1,2].scatter(thetas_values_w[Indices_sub,1],q_d_v[Indices_sub,1])
+
 # Regression error
 
-F_vec = Forces_vector(F_ext_func,t_values_s)
-
-axs[2, 0].set_title("Regression error")
-axs[2, 0].plot(np.repeat(t_values_s,Coord_number)*2,(Exp_matrix@Solution_ideal-F_vec),label="ideal solution")
-
-if regression:
-    axs[2, 0].plot(np.repeat(t_values_s, Coord_number) * 2, (Exp_matrix @ Solution - F_vec),label="solution")
-
-axs[2, 0].legend()
-
-axs[2, 1].set_title("Model retrieved")
-Bar_height_ideal = np.abs(Solution_ideal) / np.max(np.abs(Solution_ideal))
-axs[2, 1].bar(np.arange(len(Solution_ideal)), Bar_height_ideal[:, 0], width=1, label="True model")
-if regression :
-    Bar_height_found = np.abs(Solution) / np.max(np.abs(Solution))
-    axs[2, 1].bar(np.arange(len(Solution_ideal)), Bar_height_found[:, 0], width=0.5, label="Model Found")
-
-axs[2, 1].legend()
 
 plt.show()

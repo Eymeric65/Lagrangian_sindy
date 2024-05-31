@@ -102,7 +102,11 @@ def Symbol_Matrix_g(Coord_number,t):
 
 def Forces_vector(F_fun,t_v):
 
-    return np.transpose(np.reshape(F_fun(t_v),(1,-1)))
+    F_vec = F_fun(t_v)
+
+    F_vec[0:-1,:] -= F_vec[1:,:]
+
+    return np.transpose(np.reshape(F_vec,(1,-1)))
 
 def Make_Solution_vec(exp,Catalog,Frottement=[]):
 
