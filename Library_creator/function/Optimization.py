@@ -165,4 +165,19 @@ def Un_normalize_exp(coeff,Variance,reduction,Exp_mat):
 
     return Solution
 
+def Covariance_vector(Exp_matrix,Cov,Qt):
+
+    print("Covariance shape : ",Cov.shape)
+
+    print("Exp shape : ", Exp_matrix.shape)
+
+    Res = Exp_matrix@Cov@Exp_matrix.T
+
+    Res = np.reshape(np.diagonal(Res),(-1,Qt))
+
+    Res = np.sum(Res,axis=1)
+
+    return Res
+    print("Res shape : ",Res.shape)
+
 

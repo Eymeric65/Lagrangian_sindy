@@ -192,9 +192,12 @@ def Catalog_to_experience_matrix(Nt,Qt,Catalog,Sm,t,q_v,q_t,subsample=1,noise=0,
     Exp_Mat = np.zeros(((Nt_s) * Qt, len(Catalog)+int(Frottement)*Qt))
 
     if len(q_d_v) == 0 :
-        q_d_v = np.gradient(q_v,q_t,axis=0)
+        print("Usage of approximation of speed")
+        q_d_v = np.gradient(q_v,q_t,axis=0,edge_order=2)
     if len(q_dd_v) == 0:
-        q_dd_v= np.gradient(q_d_v,q_t,axis=0)
+        print("Usage of approximation of acceleration")
+        print("Shape of array :",q_d_v.shape,q_t.shape)
+        q_dd_v= np.gradient(q_d_v,q_t,axis=0,edge_order=2)
 
     q_matrix = np.zeros((Sm.shape[0],Sm.shape[1],Nt_s))
 
@@ -202,7 +205,7 @@ def Catalog_to_experience_matrix(Nt,Qt,Catalog,Sm,t,q_v,q_t,subsample=1,noise=0,
     q_matrix[2, :, :] = np.transpose(q_d_v[troncature::subsample])
     q_matrix[3, :, :] = np.transpose(q_dd_v[troncature::subsample])
 
-    q_matrix = q_matrix + np.random.normal(0,noise,q_matrix.shape)
+    #q_matrix = q_matrix + np.random.normal(0,noise,q_matrix.shape)
 
     for i in range(Qt):
 
@@ -238,7 +241,47 @@ def Catalog_to_experience_matrix(Nt,Qt,Catalog,Sm,t,q_v,q_t,subsample=1,noise=0,
 
                 Exp_Mat[i * Nt_s:(i + 1) * (Nt_s), len(Catalog_lambded) + i] -= q_d_v[troncature::subsample,i-1]
 
+    return Exp_Mat,q_t[troncature::subsample]
 
+def Covariance_exp_Matrix(Exp_matrix,Solution,Qt): # Grossse chiasse
 
+    print( Exp_matrix.shape)
 
-    return Exp_Mat
+    covSol = np.linalg.inv( Exp_matrix.T@Exp_matrix )
+
+    Nt = int(Exp_matrix.shape[0]/Qt)
+
+    print(Nt,covSol.shape)
+
+    Var = np.zeros((Nt,))
+
+    for i in range(Qt):
+
+        App = Exp_matrix[i * Nt:(i + 1) * (Nt),:]
+
+        print("app shape : ",App.shape," Cov sol shape : ",covSol.shape)
+
+        Var = Var + (covSol*App@App.T).diagonal()
+
+    return Var
+
+def Covariance_vec(Exp_matrix,covSol,Qt): # Grossse chiasse
+
+    print( Exp_matrix.shape)
+
+    Nt = int(Exp_matrix.shape[0]/Qt)
+
+    print(Nt,covSol.shape)
+
+    Var = np.zeros((Nt,))
+
+    for i in range(Qt):
+
+        App = Exp_matrix[i * Nt:(i + 1) * (Nt),:]
+
+        print("app shape : ",App.shape," Cov sol shape : ",covSol.shape)
+
+        Var = Var + (App@covSol@App.T).diagonal()
+
+    return Var
+

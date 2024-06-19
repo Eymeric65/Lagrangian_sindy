@@ -18,8 +18,8 @@ q_accel = []
 
 time_l = []
 
-q0_init = 0
-q1_init = 0
+q0_init = 2
+q1_init = 4
 
 
 m = mujoco.MjModel.from_xml_path('2D_double_pendulum_point_mass.xml')
@@ -97,7 +97,7 @@ with mujoco.viewer.launch_passive(m, d) as viewer:
 
   # ----------------External Forces--------------------
 
-  M_span = [0, 4]  # Max span
+  M_span = [2, 4]  # Max span
 
   periode_shift = 0.5
 
@@ -162,7 +162,7 @@ with mujoco.viewer.launch_passive(m, d) as viewer:
 
   if Reg:
 
-    Solution, Exp_matrix, t_values_s = Execute_Regression(time_l, theta_v, t, Symb, Catalog, F_ext_func,Subsample=Subsample,q_d_v=theta_d_v,q_dd_v=theta_dd_v)
+    Solution, Exp_matrix, t_values_s,_ = Execute_Regression(time_l, theta_v, t, Symb, Catalog, F_ext_func,Subsample=Subsample,q_d_v=theta_d_v,q_dd_v=theta_dd_v)
 
   fig, axs = plt.subplots(2, 3)
 
@@ -185,7 +185,7 @@ with mujoco.viewer.launch_passive(m, d) as viewer:
   L1t = 1
   L2t = 1
   Lt = L1t + L2t
-  Substitution = {"g": 9.81, "l1": L1t, "m1": 1, "l2": L2t, "m2": 1}
+  Substitution = {"g": 9.81, "l1": L1t, "m1": 0.8, "l2": L2t, "m2": 0.8}
 
   L = (1 / 2 * (m1 + m2) * l1 ** 2 * theta1_d ** 2 + 1 / 2 * m2 * l2 ** 2 * theta2_d ** 2 + m2 * l1 * l2 * theta1_d
        * theta2_d * sp.cos(theta1 - theta2) + (m1 + m2) * g * l1 * sp.cos(theta1) + m2 * g * l2 * sp.cos(
@@ -193,7 +193,7 @@ with mujoco.viewer.launch_passive(m, d) as viewer:
 
   Y0 = np.array([[q0_init, 0], [q1_init, 0]])  # De la forme (k,2)
 
-  Frotement = [-0.3, -0.5]
+  Frotement = [-1.4, -1.2]
 
   # -------------------------------
 
