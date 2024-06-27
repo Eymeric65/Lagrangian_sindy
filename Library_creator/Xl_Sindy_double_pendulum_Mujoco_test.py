@@ -126,11 +126,11 @@ t_values_w, phase = Mujoco_simulation("2D_double_pendulum.xml", Y0Muj,F_ext_func
 
 #Theoratical problem
 
-Acc_func,_ = Lagrangian_to_Acc_func(L, Symb, t, Substitution, fluid_f=Frotement)
+#Acc_func,_ = Lagrangian_to_Acc_func(L, Symb, t, Substitution, fluid_f=Frotement)
 
-Dynamics_system = Dynamics_f(Acc_func,F_ext_func)
+#Dynamics_system = Dynamics_f(Acc_func,F_ext_func)
 
-t_values_w_t, phase_t = Run_RK45(Dynamics_system, Y0, Time_end,max_step=0.01)
+#t_values_w_t, phase_t = Run_RK45(Dynamics_system, Y0, Time_end,max_step=0.01)
 
 
 
@@ -240,8 +240,8 @@ axs[1,0].set_title("q1")
 axs[0,0].plot(t_values_w,thetas_values_w[:,0])
 axs[1,0].plot(t_values_w,thetas_values_w[:,1])
 
-axs[0,0].plot(t_values_w_t,phase_t[:,0])
-axs[1,0].plot(t_values_w_t,phase_t[:,2])
+#axs[0,0].plot(t_values_w_t,phase_t[:,0])
+#axs[1,0].plot(t_values_w_t,phase_t[:,2])
 
 if (Model_Valid):
     Dynamics_system_2 = Dynamics_f(Acc_func2, F_ext_func)

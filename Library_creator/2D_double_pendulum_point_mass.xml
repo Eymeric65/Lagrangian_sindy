@@ -5,10 +5,10 @@
       <light diffuse="0 0 0" pos="0 0 10" dir="0 0 -1"/>
       <body pos="0 0 1" euler="0 180 0">
          <joint name="joint0" type="hinge" axis = "0 -1 0" pos = "0 0 0.5" damping="1.4"/>
-         <geom type="sphere" size="0.005" rgba="1 0 0 1" mass="0.8" pos="0 0 -0.5"/>
+         <geom type="sphere" size="0.05" rgba="1 0 0 1" mass="0.8" pos="0 0 -0.5"/>
          <body pos="0 -0.1 -1" euler="0 0 0">
            <joint name="joint1" type="hinge" axis = "0 -1 0" pos = "0 0 0.5" damping="1.2"/>
-           <geom type="sphere" size="0.005" rgba="0 1 0 1" mass="0.8" pos="0 0 -0.5"/>
+           <geom type="sphere" size="0.05" rgba="0 1 0 1" mass="0.8" pos="0 0 -0.5"/>
          </body>
       </body>
     </worldbody>

@@ -20,16 +20,16 @@ regression = True
 # N_periode = 5# In one periode they will be Surfacteur*N_Periode/Cat_len time tick
 
 L1t = 1.
-L2t = 1.
-m_1 = .8
-m_2 = .8
-Frotement = [-1.4,-1.2]
+L2t = 0.95
+m_1 = .85
+m_2 = .9
+Frotement = [-1.2,-1.0]
 Y0 = np.array([[2, 0], [0, 0]])  # De la forme (k,2)
 
 #M_span = [15.8,4.5] # Max span
-#M_span = [10.8,3.5] # Max span
+M_span = [10.8,3.5] # Max span
 #M_span = [2.8,2.5] # Max span less determination
-M_span = [15.48,0]
+#M_span = [15.48,0]
 periode = 1 #
 periode_shift = 0.2
 Surfacteur=10 # La base
@@ -168,7 +168,7 @@ fig.suptitle("Resultat Experience Double pendule"+str(Noise_sigma))
 
 if(Model_Valid):
 
-    M_span_valid = [15.8,4.5]
+    M_span_valid = [10.8,4.5]
     periode_valid = 1.3 #
     periode_shift_valid = 0.3
 
