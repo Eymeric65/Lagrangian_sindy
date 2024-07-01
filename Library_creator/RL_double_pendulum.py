@@ -59,8 +59,6 @@ config = (
     PPOConfig().environment(
         # Env class to use (here: our gym.Env sub-class from above).
         env=MyFunctionEnv,
-        # Config dict to be passed to our custom env's constructor.
-        # Use corridor with 20 fields (including S and G).
         env_config={"coord_numb": Coord_number,"target":target,"dynamics_function_h":Acc_func,"h":h},
     )
     .framework("torch")
@@ -71,24 +69,16 @@ config = (
 # Construct the actual (PPO) algorithm object from the config.
 algo = config.build()
 
-# Train for n iterations and report results (mean episode rewards).
-# Since we have to move at least 19 times in the env to reach the goal and
-# each move gives us -0.1 reward (except the last move at the end: +1.0),
-# Expect to reach an optimal episode reward of `-0.1*18 + 1.0 = -0.8`.
 for i in range(30):
     results = algo.train()
     print(f"Iter: {i}; avg. return={results['env_runners']['episode_return_mean']}")
 
-# Perform inference (action computations) based on given env observations.
-# Note that we are using a slightly different env here (len 10 instead of 20),
-# however, this should still work as the agent has (hopefully) learned
-# to "just always walk right!"
 env = MyFunctionEnv({"coord_numb": Coord_number,"target":target,"dynamics_function_h":Acc_func,"h":h})
-# Get the initial observation (should be: [0.0] for the starting position).
+
 obs, info = env.reset()
 terminated = truncated = False
 total_reward = 0.0
-# Play one episode.
+
 while not terminated and not truncated:
     # Compute a single action, given the current observation
     # from the environment.
