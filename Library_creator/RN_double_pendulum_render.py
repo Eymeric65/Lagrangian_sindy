@@ -14,8 +14,8 @@ L1t = 1.
 L2t = 1.
 m_1 = .8
 m_2 = .8
-Y0 = np.array([[2, 0], [0, 0]])  # De la forme (k,2)
-Frotement = [-0.4,-0.02]
+Y0 = np.array([[3, 0], [2, 0]])  # De la forme (k,2)
+Frotement = [-0.0,-0.0]
 
 t = sp.symbols("t")
 
@@ -50,9 +50,6 @@ F_ext_Value = np.array([[0, 0, 0, 0, 0, 0],[0, 1, -1, 1, 1, -1]]) * 0.0  # De la
 
 F_ext_func = interpolate.CubicSpline(F_ext_time, F_ext_Value, axis=1)
 # ---------------------------
-
-#Y0 = np.array([[0, 0], [0.0, 0]])  # De la forme (k,2)
-Y0 = np.array([[2, 0], [0.1, 0]])  # De la forme (k,2)
 
 
 Acc_func,_ = Lagrangian_to_Acc_func(L, Symb, t, Substitution, fluid_f=Frotement)
