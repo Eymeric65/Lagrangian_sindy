@@ -8,7 +8,7 @@ from function.ray_env_creator import *
 
 from ray.rllib.algorithms.ppo import PPOConfig
 import ray
-from ray import tune
+from ray import tune,train
 from ray.rllib.algorithms.ppo import PPO
 
 import pprint
@@ -54,7 +54,7 @@ EnvConfig = {
     "coord_numb": CoordNumb,
     "target":np.array([np.pi,0]),
     "dynamics_function_h":Dynamics_system,
-    "h":0.05
+    "h":0.1
 }
 
 ray.init(
@@ -77,7 +77,28 @@ config = (
     .resources(num_cpus_per_worker=1, num_gpus_per_worker=1 / 16)
     # Parallelize environment rollouts.
     .env_runners(num_env_runners=10)
+    .training(lr=tune.grid_search([0.0001, 0.00001, 0.0005]),gamma=tune.grid_search([0.9, 0.95, 0.99]))
 )
+
+# tuner = tune.Tuner(
+#     "PPO",
+#     run_config=train.RunConfig(
+#         stop={"training_iteration": 10},
+#     ),
+#     param_space=config,
+# )
+
+# results = tuner.fit()
+
+# # Get the best result based on a particular metric.
+# best_result = results.get_best_result(
+#     metric="env_runners/episode_return_mean", mode="max"
+# )
+
+# # Get the best checkpoint corresponding to the best result.
+# best_checkpoint = best_result.checkpoint
+
+# pprint.pp(best_checkpoint)
 # Construct the actual (PPO) algorithm object from the config.
 algo = config.build()
 
@@ -85,7 +106,7 @@ for i in range(40):
     results = algo.train()
     print(f"Iter: {i}; avg. return={results['env_runners']['episode_return_mean']}")
 
-    pprint.pp(results)
+    #pprint.pp(results)
 
 #Confirmation experience
 

@@ -6,6 +6,13 @@ from function.Catalog_gen import *
 
 from function.ray_env_creator import *
 
+from ray.rllib.algorithms.ppo import PPOConfig
+import ray
+from ray import tune
+from ray.rllib.algorithms.ppo import PPO
+
+from ray.rllib.algorithms.algorithm import Algorithm
+
 # Single pendulum exclusive.....
 
 # Initialisation du modèle théorique
@@ -45,25 +52,33 @@ Dynamics_system = Dynamics_f_extf(Acc_func)
 
 EnvConfig = {
     "coord_numb": CoordNumb,
-    "target":np.array([-0.5,0]),
+    "target":np.array([np.pi,0]),
     "dynamics_function_h":Dynamics_system,
-    "h":0.01
+    "h":0.001
 }
 
+ray.init(
+  num_cpus=16,
+  num_gpus=1,
+  include_dashboard=False,
+  ignore_reinit_error=True,
+  log_to_driver=False,
+)
+
+
+#Confirmation experience
+
+stop = False
 Environment = MyFunctionEnv(EnvConfig)
 
-s = -1 
+algo = Algorithm.from_checkpoint("/home/eymeric/ray_results/PPO_SimpleCorridor_2024-07-01_17-48-35434utp53")
 
-while True:
-    if (Environment.time /0.5) % 2 > 1 and s==-1 :
-        s=1
+while not stop:
 
-    if (Environment.time /0.5) % 2 < 1 and s==1 :
-        s=-1
+    action = algo.compute_single_action(Environment.state)
 
-    state, reward, done, truncated,_ =Environment.step(np.array([0.2]))
+    state, reward, stop, truncated,_ = Environment.step(action)
 
-    print(state, reward, done, truncated)
+    print(state, reward, action, stop, truncated)
 
     Environment.render()
-

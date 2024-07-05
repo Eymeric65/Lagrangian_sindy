@@ -18,7 +18,7 @@ class MyFunctionEnv(gym.Env):
     def __init__(self,config):
         #uper(MyFunctionEnv, self).__init__()
         # Define action and observation space
-        self.max_act = 0.2
+        self.max_act = 0.15
         self.action_space = gym.spaces.Box(-self.max_act, self.max_act, shape=(config["coord_numb"],), dtype=np.float32)
         self.observation_space = gym.spaces.Box(-np.inf, np.inf, shape=(config["coord_numb"]*2,), dtype=np.float32)
         self.coord_numb = config["coord_numb"]
@@ -62,20 +62,26 @@ class MyFunctionEnv(gym.Env):
             truncated = False
 
         #truncated = False
+
         return self.state, reward, done, truncated, {}
 
-    def compute_reward(self, state,reward):
+    def compute_reward(self, state,action):
         # Reward is the negative distance to the target
 
         distance = np.linalg.norm(state[::2]-self.target[::2])
 
+
         speed = np.linalg.norm(state[1::2]-self.target[1::2])
 
         cross_pen = np.sqrt(distance*np.linalg.norm(state[1::2]-self.max_act) )
+        
+        envy =   np.sum(action*state[1::2]) *distance /(self.max_act*self.coord_numb)
 
         #distance = np.linalg.norm(state - self.target)
         #reward = -(5*distance + speed/(distance+1)*2 )
-        reward = -(distance)*100
+        #reward = -(distance+cross_pen) +envy
+        reward = - distance**2 - np.sum(action**2)
+
 
         return reward
 
