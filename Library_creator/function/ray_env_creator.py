@@ -80,7 +80,13 @@ class MyFunctionEnv(gym.Env):
         #distance = np.linalg.norm(state - self.target)
         #reward = -(5*distance + speed/(distance+1)*2 )
         #reward = -(distance+cross_pen) +envy
-        reward = - distance**2 - np.sum(action**2)
+
+
+
+        reward = - np.sum(action**2) + distance*(speed-100-distance )
+
+        if distance<0.5:
+            reward += 500
 
 
         return reward

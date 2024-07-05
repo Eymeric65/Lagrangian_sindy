@@ -13,6 +13,9 @@ from ray.rllib.algorithms.ppo import PPO
 
 from ray.rllib.algorithms.algorithm import Algorithm
 
+ray.shutdown()
+ray.init()
+
 # Single pendulum exclusive.....
 
 # Initialisation du modèle théorique
@@ -46,7 +49,7 @@ Y0 = np.array([[2, 0]])  # De la forme (k,2)
 
 L_System = m*l**2/2*theta_d**2+sp.cos(theta)*l*m*g
 
-Acc_func,_ = Lagrangian_to_Acc_func(L_System, Symb, t, Substitution, fluid_f=[-0.02])
+Acc_func,_ = Lagrangian_to_Acc_func(L_System, Symb, t, Substitution, fluid_f=[-0.008])
 
 Dynamics_system = Dynamics_f_extf(Acc_func)
 
@@ -54,7 +57,7 @@ EnvConfig = {
     "coord_numb": CoordNumb,
     "target":np.array([np.pi,0]),
     "dynamics_function_h":Dynamics_system,
-    "h":0.001
+    "h":0.01
 }
 
 ray.init(
@@ -71,7 +74,7 @@ ray.init(
 stop = False
 Environment = MyFunctionEnv(EnvConfig)
 
-algo = Algorithm.from_checkpoint("/home/eymeric/ray_results/PPO_SimpleCorridor_2024-07-01_17-48-35434utp53")
+algo = Algorithm.from_checkpoint("/home/eymeric/ray_checkpoints/checkpoint_exp2_0003")
 
 while not stop:
 

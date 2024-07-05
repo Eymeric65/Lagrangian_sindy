@@ -39,7 +39,7 @@ Y0 = np.array([[2, 0]])  # De la forme (k,2)
 
 L_System = m*l**2/2*theta_d**2+sp.cos(theta)*l*m*g
 
-Acc_func,_ = Lagrangian_to_Acc_func(L_System, Symb, t, Substitution, fluid_f=[-0.02])
+Acc_func,_ = Lagrangian_to_Acc_func(L_System, Symb, t, Substitution, fluid_f=[-0.01])
 
 Dynamics_system = Dynamics_f_extf(Acc_func)
 
@@ -55,15 +55,20 @@ Environment = MyFunctionEnv(EnvConfig)
 s = -1 
 
 while True:
-    if (Environment.time /0.5) % 2 > 1 and s==-1 :
-        s=1
+    # if (Environment.state[] /0.5) % 2 > 1 and s==-1 :
+    #     s=1
 
-    if (Environment.time /0.5) % 2 < 1 and s==1 :
-        s=-1
+    # if (Environment.time /0.5) % 2 < 1 and s==1 :
+    #     s=-1
 
-    state, reward, done, truncated,_ =Environment.step(np.array([0.2]))
+    
 
-    print(state, reward, done, truncated)
+    state, reward, done, truncated,_ =Environment.step(np.array([0.15*s]))
+
+    s = - np.sign(Environment.state[1])
+    print(s)
+
+    #print(state, reward, done, truncated)
 
     Environment.render()
 
